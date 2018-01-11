@@ -31,7 +31,7 @@ rspamd.ini
     Possible values are:
 
         "always" - always add headers
-        "never" - never add headers (unless provided by rspamd - see rmilter\_headers)
+        "never" - never add headers (unless provided by rspamd - see rmilter_headers)
         "sometimes" - add headers when rspamd recommends `add header` action
 
     Format of these headers is governed by header.* settings
@@ -93,11 +93,23 @@ rspamd.ini
 
     If set, add the numeric spam score in a header with this name.
 
-- rmilter_headers.enabled
+- rewrite\_subject.enabled
 
     Default: true
 
-    If set to true, allow rspamd to add/remove headers to messages via [task:rmilter_set_reply()](https://rspamd.com/doc/lua/task.html#me7351).
+    If set to true, "rewrite subject" action is honored.
+
+- rmilter\_headers.enabled
+
+    Default: true
+
+    If set to true, allow rspamd to add/remove headers to messages via [task:set_milter_reply()](https://rspamd.com/doc/lua/task.html#m70081).
+
+- smtp\_message.enabled
+
+    Default: true
+
+    If set to true, "smtp_message" provided by Rspamd is used in response for "reject" & "soft reject" actions.
 
 - soft\_reject.enabled
 
@@ -128,6 +140,12 @@ rspamd.ini
     Default: /
 
     Used as character for visual spam-level where score is zero.
+
+- subject
+
+    Default: [SPAM] %s
+
+    Subject to use for `rewrite subject` action if Rspamd does not provide one.
 
 - timeout (in seconds)
 

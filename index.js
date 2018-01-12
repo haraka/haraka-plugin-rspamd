@@ -161,9 +161,10 @@ exports.hook_data_post = function (next, connection) {
     let rawData = '';
     const start = Date.now();
     connection.transaction.message_stream.pipe(
-        req = http.request(options, function (res) {
-            res.on('data', function (chunk) { rawData += chunk; });
-            res.on('end', function () {
+        req = http.request(options, (res) => {
+            res.on('data', (chunk) => { rawData += chunk; });
+
+            res.on('end', () => {
                 const r = plugin.parse_response(rawData, connection);
                 if (!r) return callNext();
                 if (!r.data) return callNext();
@@ -176,8 +177,7 @@ exports.hook_data_post = function (next, connection) {
                 connection.transaction.results.add(plugin, r.log);
 
                 let smtp_message;
-                if (cfg.smtp_message.enabled && r.data.messages &&
-                  typeof(r.data.messages) == 'object' && r.data.messages.smtp_message) {
+                if (cfg.smtp_message.enabled && r.data.messages && typeof(r.data.messages) == 'object' && r.data.messages.smtp_message) {
                     smtp_message = r.data.messages.smtp_message;
                 }
 
@@ -200,7 +200,7 @@ exports.hook_data_post = function (next, connection) {
                     if (plugin.wants_headers_added(r.data)) {
                         plugin.add_headers(connection, r.data);
                     }
-                    return callNext();
+                    callNext();
                 }
 
                 if (cfg.rewrite_subject.enabled && r.data.action === 'rewrite subject') {
@@ -212,14 +212,15 @@ exports.hook_data_post = function (next, connection) {
                 }
 
                 if (cfg.soft_reject.enabled && r.data.action === 'soft reject') {
-                    return callNext(DENYSOFT, DSN.sec_unauthorized(smtp_message || cfg.soft_reject.message, 451));
+                    callNext(DENYSOFT, DSN.sec_unauthorized(smtp_message || cfg.soft_reject.message, 451));
+                    return;
                 }
 
                 if (r.data.action !== 'reject') return no_reject();
                 if (!authed && !cfg.reject.spam) return no_reject();
                 if (authed && !cfg.reject.authenticated) return no_reject();
 
-                return callNext(DENY, smtp_message || cfg.reject.message);
+                callNext(DENY, smtp_message || cfg.reject.message);
             });
         })
     );
@@ -227,7 +228,7 @@ exports.hook_data_post = function (next, connection) {
     req.on('error', function (err) {
         if (!connection || !connection.transaction) return;
         connection.transaction.results.add(plugin, { err: err.message});
-        return callNext();
+        callNext();
     });
 };
 

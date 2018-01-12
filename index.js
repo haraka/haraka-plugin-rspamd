@@ -20,8 +20,10 @@ exports.load_rspamd_ini = function () {
             '-check.private_ip',
             '+reject.spam',
             '-reject.authenticated',
+            '+rewrite_subject.enabled',
             '+rmilter_headers.enabled',
             '+soft_reject.enabled',
+            '+smtp_message.enabled',
         ],
     }, function () {
         plugin.load_rspamd_ini();
@@ -49,6 +51,10 @@ exports.load_rspamd_ini = function () {
             plugin.cfg.main.add_headers = 'sometimes';
         }
     }
+
+    if (!plugin.cfg.subject) {
+        plugin.cfg.subject = "[SPAM] %s";
+    }
 };
 
 exports.get_options = function (connection) {
@@ -60,7 +66,7 @@ exports.get_options = function (connection) {
         headers: {},
         port: plugin.cfg.main.port,
         host: plugin.cfg.main.host,
-        path: '/check',
+        path: '/checkv2',
         method: 'POST',
     };
 
@@ -161,7 +167,6 @@ exports.hook_data_post = function (next, connection) {
                 const r = plugin.parse_response(rawData, connection);
                 if (!r) return callNext();
                 if (!r.data) return callNext();
-                if (!r.data.default) return callNext();
                 if (!r.log) return callNext();
 
                 r.log.emit = true; // spit out a log entry
@@ -170,24 +175,27 @@ exports.hook_data_post = function (next, connection) {
                 if (!connection.transaction) return callNext();
                 connection.transaction.results.add(plugin, r.log);
 
+                let smtp_message;
+                if (cfg.smtp_message.enabled && r.data.messages &&
+                  typeof(r.data.messages) == 'object' && r.data.messages.smtp_message) {
+                    smtp_message = r.data.messages.smtp_message;
+                }
+
                 function no_reject () {
                     if (cfg.dkim.enabled && r.data['dkim-signature']) {
                         connection.transaction.add_header('DKIM-Signature', r.data['dkim-signature']);
                     }
-                    if (cfg.rmilter_headers.enabled && r.rmilter) {
-                        if (r.rmilter.remove_headers) {
-                            Object.keys(r.rmilter.remove_headers).forEach(function (key) {
+                    if (cfg.rmilter_headers.enabled && r.data.milter) {
+                        if (r.data.milter.remove_headers) {
+                            Object.keys(r.data.milter.remove_headers).forEach(function (key) {
                                 connection.transaction.remove_header(key);
                             })
                         }
-                        if (r.rmilter.add_headers) {
-                            Object.keys(r.rmilter.add_headers).forEach(function (key) {
-                                connection.transaction.add_header(key, r.rmilter.add_headers[key]);
+                        if (r.data.milter.add_headers) {
+                            Object.keys(r.data.milter.add_headers).forEach(function (key) {
+                                connection.transaction.add_header(key, r.data.milter.add_headers[key]);
                             })
                         }
-                    }
-                    if (cfg.soft_reject.enabled && r.data.default.action === 'soft reject') {
-                        return callNext(DENYSOFT, DSN.sec_unauthorized(cfg.soft_reject.message, 451));
                     }
                     if (plugin.wants_headers_added(r.data)) {
                         plugin.add_headers(connection, r.data);
@@ -195,11 +203,23 @@ exports.hook_data_post = function (next, connection) {
                     return callNext();
                 }
 
-                if (r.data.default.action !== 'reject') return no_reject();
+                if (cfg.rewrite_subject.enabled && r.data.action === 'rewrite subject') {
+                    const rspamd_subject = r.data.subject || cfg.subject;
+                    const old_subject = connection.transaction.header.get('Subject') || '';
+                    const new_subject = rspamd_subject.replace('%s', old_subject);
+                    connection.transaction.remove_header('Subject');
+                    connection.transaction.add_header('Subject', new_subject);
+                }
 
+                if (cfg.soft_reject.enabled && r.data.action === 'soft reject') {
+                    return callNext(DENYSOFT, DSN.sec_unauthorized(smtp_message || cfg.soft_reject.message, 451));
+                }
+
+                if (r.data.action !== 'reject') return no_reject();
                 if (!authed && !cfg.reject.spam) return no_reject();
                 if (authed && !cfg.reject.authenticated) return no_reject();
-                return callNext(DENY, cfg.reject.message);
+
+                return callNext(DENY, smtp_message || cfg.reject.message);
             });
         })
     );
@@ -218,7 +238,7 @@ exports.wants_headers_added = function (rspamd_data) {
     if (plugin.cfg.main.add_headers === 'always') return true;
 
     // implicit add_headers=sometimes, based on rspamd response
-    if (rspamd_data.default.action === 'add header') return true;
+    if (rspamd_data.action === 'add header') return true;
     return false;
 };
 
@@ -243,20 +263,22 @@ exports.parse_response = function (rawData, connection) {
         return;
     }
 
-    // copy those nested objects into a higher level object
-    const dataClean = {};
-    Object.keys(data.default).forEach(function (key) {
-        const a = data.default[key];
+    // make cleaned data for logs
+    const dataClean = {symbols: {}};
+    Object.keys(data.symbols).forEach(function (key) {
+        const a = data.symbols[key];
+        // transform { name: KEY, score: VAL } -> { KEY: VAL }
+        if (a.name && a.score !== undefined) {
+            dataClean.symbols[ a.name ] = a.score;
+        } else {
+            // unhandled type
+            connection.logerror(plugin, a);
+        }
+    });
+    const wantKeys = ["action", "is_skipped", "required_score", "score"];
+    wantKeys.forEach(function (key) {
+        const a = data[key];
         switch (typeof a) {
-            case 'object':
-                // transform { name: KEY, score: VAL } -> { KEY: VAL }
-                if (a.name && a.score !== undefined) {
-                    dataClean[ a.name ] = a.score;
-                    break;
-                }
-                // unhandled type
-                connection.logerror(plugin, a);
-                break;
             case 'boolean':
             case 'number':
             case 'string':
@@ -270,7 +292,16 @@ exports.parse_response = function (rawData, connection) {
     // arrays which might be present
     ['urls', 'emails', 'messages'].forEach(function (b) {
         // collapse to comma separated string, so values get logged
-        if (data[b] && data[b].length) dataClean[b] = data[b].join(',');
+        if (data[b]) {
+            if (data[b].length) {
+                dataClean[b] = data[b].join(',');
+            } else if (typeof(data[b]) == 'object') {
+                // 'messages' is probably a dictionary
+                Object.keys(data[b]).map(function (k) {
+                    return k + " : " + data[b][k];
+                }).join(',');
+            }
+        }
     });
 
     return {
@@ -287,12 +318,12 @@ exports.add_headers = function (connection, data) {
         let spamBar = '';
         let spamBarScore = 1;
         let spamBarChar = cfg.spambar.neutral || '/';
-        if (data.default.score >= 1) {
-            spamBarScore = Math.floor(data.default.score);
+        if (data.score >= 1) {
+            spamBarScore = Math.floor(data.score);
             spamBarChar = cfg.spambar.positive || '+';
         }
-        else if (data.default.score <= -1) {
-            spamBarScore = Math.floor(data.default.score * -1);
+        else if (data.score <= -1) {
+            spamBarScore = Math.floor(data.score * -1);
             spamBarChar = cfg.spambar.negative || '-';
         }
         for (let i = 0; i < spamBarScore; i++) {
@@ -304,10 +335,10 @@ exports.add_headers = function (connection, data) {
 
     if (cfg.header && cfg.header.report) {
         const prettySymbols = [];
-        for (const k in data.default) {
-            if (data.default[k].score) {
-                prettySymbols.push(data.default[k].name +
-                    '(' + data.default[k].score + ')');
+        for (const k in data.symbols) {
+            if (data.symbols[k].score) {
+                prettySymbols.push(data.symbols[k].name +
+                    '(' + data.symbols[k].score + ')');
             }
         }
         connection.transaction.remove_header(cfg.header.report);
@@ -317,6 +348,6 @@ exports.add_headers = function (connection, data) {
 
     if (cfg.header && cfg.header.score) {
         connection.transaction.remove_header(cfg.header.score);
-        connection.transaction.add_header(cfg.header.score, '' + data.default.score);
+        connection.transaction.add_header(cfg.header.score, '' + data.score);
     }
 };

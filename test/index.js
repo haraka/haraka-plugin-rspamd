@@ -54,8 +54,8 @@ exports.add_headers = {
     'adds a header to a message with positive score': function (test) {
         test.expect(3);
         const test_data = {
-            default: {
-                score: 1.1,
+            score: 1.1,
+            symbols: {
                 FOO: {
                     name: 'FOO',
                     score: 0.100000,
@@ -78,9 +78,7 @@ exports.add_headers = {
     'adds a header to a message with negative score': function (test) {
         test.expect(2);
         const test_data = {
-            default: {
-                score: -1,
-            }
+            score: -1
         };
         this.plugin.add_headers(this.connection, test_data);
         // console.log(this.connection.transaction.header);
@@ -96,7 +94,7 @@ exports.wants_headers_added = {
         test.expect(1);
         this.plugin.cfg.main.add_headers='never';
         test.equal(
-            this.plugin.wants_headers_added({ default: { action: 'add header' }}),
+            this.plugin.wants_headers_added({ action: 'add header' }),
             false
         );
         test.done();
@@ -105,7 +103,7 @@ exports.wants_headers_added = {
         test.expect(1);
         this.plugin.cfg.main.add_headers='always';
         test.equal(
-            this.plugin.wants_headers_added({ default: { action: 'beat it' }}),
+            this.plugin.wants_headers_added({ action: 'beat it' }),
             true
         );
         test.done();
@@ -114,11 +112,11 @@ exports.wants_headers_added = {
         test.expect(2);
         this.plugin.cfg.main.add_headers='sometimes';
         test.equal(
-            this.plugin.wants_headers_added({ default: { action: 'add header' }}),
+            this.plugin.wants_headers_added({ action: 'add header' }),
             true
         );
         test.equal(
-            this.plugin.wants_headers_added({ default: { action: 'brownlist' }}),
+            this.plugin.wants_headers_added({ action: 'brownlist' }),
             false
         );
         test.done();

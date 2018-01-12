@@ -25,7 +25,7 @@ exports.load_rspamd_ini = function () {
             '+soft_reject.enabled',
             '+smtp_message.enabled',
         ],
-    }, function () {
+    }, () => {
         plugin.load_rspamd_ini();
     });
 
@@ -141,14 +141,14 @@ exports.hook_data_post = function (next, connection) {
     const timeout = plugin.cfg.main.timeout || plugin.timeout - 1;
 
     let calledNext=false;
-    const callNext = function (code, msg) {
+    function callNext (code, msg) {
         clearTimeout(timer);
         if (calledNext) return;
         calledNext=true;
         next(code, msg);
     }
 
-    timer = setTimeout(function () {
+    timer = setTimeout(() => {
         if (!connection) return;
         if (!connection.transaction) return;
         connection.transaction.results.add(plugin, {err: 'timeout'});
@@ -187,12 +187,12 @@ exports.hook_data_post = function (next, connection) {
                     }
                     if (cfg.rmilter_headers.enabled && r.data.milter) {
                         if (r.data.milter.remove_headers) {
-                            Object.keys(r.data.milter.remove_headers).forEach(function (key) {
+                            Object.keys(r.data.milter.remove_headers).forEach((key) => {
                                 connection.transaction.remove_header(key);
                             })
                         }
                         if (r.data.milter.add_headers) {
-                            Object.keys(r.data.milter.add_headers).forEach(function (key) {
+                            Object.keys(r.data.milter.add_headers).forEach((key) => {
                                 connection.transaction.add_header(key, r.data.milter.add_headers[key]);
                             })
                         }
@@ -225,7 +225,7 @@ exports.hook_data_post = function (next, connection) {
         })
     );
 
-    req.on('error', function (err) {
+    req.on('error', (err) => {
         if (!connection || !connection.transaction) return;
         connection.transaction.results.add(plugin, { err: err.message});
         callNext();
@@ -266,7 +266,7 @@ exports.parse_response = function (rawData, connection) {
 
     // make cleaned data for logs
     const dataClean = {symbols: {}};
-    Object.keys(data.symbols).forEach(function (key) {
+    Object.keys(data.symbols).forEach((key) => {
         const a = data.symbols[key];
         // transform { name: KEY, score: VAL } -> { KEY: VAL }
         if (a.name && a.score !== undefined) {
@@ -277,7 +277,7 @@ exports.parse_response = function (rawData, connection) {
         }
     });
     const wantKeys = ["action", "is_skipped", "required_score", "score"];
-    wantKeys.forEach(function (key) {
+    wantKeys.forEach((key) => {
         const a = data[key];
         switch (typeof a) {
             case 'boolean':
@@ -291,14 +291,14 @@ exports.parse_response = function (rawData, connection) {
     });
 
     // arrays which might be present
-    ['urls', 'emails', 'messages'].forEach(function (b) {
+    ['urls', 'emails', 'messages'].forEach((b) => {
         // collapse to comma separated string, so values get logged
         if (data[b]) {
             if (data[b].length) {
                 dataClean[b] = data[b].join(',');
             } else if (typeof(data[b]) == 'object') {
                 // 'messages' is probably a dictionary
-                Object.keys(data[b]).map(function (k) {
+                Object.keys(data[b]).map((k) => {
                     return k + " : " + data[b][k];
                 }).join(',');
             }

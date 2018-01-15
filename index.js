@@ -128,10 +128,11 @@ exports.get_options = function (connection) {
 
 exports.get_smtp_message = function (r) {
     const plugin = this;
-    if (!plugin.cfg.smtp_message.enabled) return;
-    if (!r.data.messages) return;
+
+    if (!plugin.cfg.smtp_message.enabled || !r.data.messages) return;
     if (typeof(r.data.messages) !== 'object') return;
     if (!r.data.messages.smtp_message) return;
+
     return r.data.messages.smtp_message;
 }
 
@@ -210,9 +211,7 @@ exports.hook_data_post = function (next, connection) {
 
         res.on('end', () => {
             const r = plugin.parse_response(rawData, connection);
-            if (!r) return nextOnce();
-            if (!r.data) return nextOnce();
-            if (!r.log) return nextOnce();
+            if (!r || !r.data || !r.log) return nextOnce();
 
             r.log.emit = true; // spit out a log entry
             r.log.time = (Date.now() - start)/1000;

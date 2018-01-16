@@ -1,9 +1,16 @@
-# 1.1.0 - 2018-01-12
+
+## 1.1.1 - 2018-NN-NN
+
+- code smell: return cleanups
+- es6: use arrow functions
+- refactored hook_data_post, addressing excessive cognitive complexity
+
+## 1.1.0 - 2018-01-12
 
 - use /checkv2 endpoint (requires rspamd 1.6+)
 - support setting SMTP message from rspamd
 - support 'rewrite subject' action
 
-# 1.0.0 - 201_-__-__
+## 1.0.0 - 201_-__-__
 
 - initial release

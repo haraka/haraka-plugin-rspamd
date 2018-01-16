@@ -69,6 +69,7 @@ exports.add_headers = {
                 }
             }
         };
+        this.plugin.cfg.main.add_headers = 'always';
         this.plugin.add_headers(this.connection, test_data);
         test.equal(this.connection.transaction.header.headers['X-Rspamd-Score'], '1.1');
         test.equal(this.connection.transaction.header.headers['X-Rspamd-Bar'], '+');
@@ -80,6 +81,7 @@ exports.add_headers = {
         const test_data = {
             score: -1
         };
+        this.plugin.cfg.main.add_headers = 'always';
         this.plugin.add_headers(this.connection, test_data);
         // console.log(this.connection.transaction.header);
         test.equal(this.connection.transaction.header.headers['X-Rspamd-Score'], '-1');

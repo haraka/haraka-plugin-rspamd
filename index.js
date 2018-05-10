@@ -8,7 +8,7 @@ const DSN = require('haraka-dsn');
 
 exports.register = function () {
     this.load_rspamd_ini();
-};
+}
 
 exports.load_rspamd_ini = function () {
     const plugin = this;
@@ -56,7 +56,7 @@ exports.load_rspamd_ini = function () {
     if (!plugin.cfg.subject) {
         plugin.cfg.subject = "[SPAM] %s";
     }
-};
+}
 
 exports.get_options = function (connection) {
     const plugin = this;
@@ -123,8 +123,13 @@ exports.get_options = function (connection) {
     if (connection.transaction.uuid)
         options.headers['Queue-Id'] = connection.transaction.uuid;
 
+    if (connection.tls.enabled) {
+        options.headers['TLS-Cipher'] = connection.tls.cipher.name;
+        options.headers['TLS-Version'] = connection.tls.cipher.version;
+    }
+
     return options;
-};
+}
 
 exports.get_smtp_message = function (r) {
     const plugin = this;
@@ -248,7 +253,7 @@ exports.hook_data_post = function (next, connection) {
 
     connection.transaction.message_stream.pipe(req);
     // pipe calls req.end() asynchronously
-};
+}
 
 exports.wants_skip = function (connection) {
     const plugin = this;
@@ -279,10 +284,12 @@ exports.wants_headers_added = function (rspamd_data) {
     // implicit add_headers=sometimes, based on rspamd response
     if (rspamd_data.action === 'add header') return true;
     return false;
-};
+}
 
 exports.parse_response = function (rawData, connection) {
     const plugin = this;
+
+    if (!rawData) return;
 
     let data;
     try {
@@ -294,6 +301,8 @@ exports.parse_response = function (rawData, connection) {
         });
         return;
     }
+
+    if (Object.keys(data).length === 0) return;
 
     if (Object.keys(data).length === 1 && data.error) {
         connection.transaction.results.add(plugin, {
@@ -313,7 +322,7 @@ exports.parse_response = function (rawData, connection) {
             // unhandled type
             connection.logerror(plugin, a);
         }
-    });
+    })
     const wantKeys = ["action", "is_skipped", "required_score", "score"];
     wantKeys.forEach((key) => {
         const a = data[key];
@@ -347,7 +356,7 @@ exports.parse_response = function (rawData, connection) {
         'data' : data,
         'log' : dataClean,
     };
-};
+}
 
 exports.add_headers = function (connection, data) {
     const plugin = this;
@@ -391,4 +400,4 @@ exports.add_headers = function (connection, data) {
         connection.transaction.remove_header(cfg.header.score);
         connection.transaction.add_header(cfg.header.score, '' + data.score);
     }
-};
+}

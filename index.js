@@ -286,6 +286,57 @@ exports.wants_headers_added = function (rspamd_data) {
     return false;
 }
 
+exports.get_clean = function (data, connection) {
+    const plugin = this;
+    const clean = { symbols: {} };
+
+    if (data.symbols) {
+        Object.keys(data.symbols).forEach(key => {
+            const a = data.symbols[key];
+            // transform { name: KEY, score: VAL } -> { KEY: VAL }
+            if (a.name && a.score !== undefined) {
+                clean.symbols[ a.name ] = a.score;
+                return;
+            }
+            // unhandled type
+            connection.logerror(plugin, a);
+        })
+    }
+
+    // objects that may exist
+    ['action', 'is_skipped', 'required_score', 'score'].forEach((key) => {
+        switch (typeof data[key]) {
+            case 'boolean':
+            case 'number':
+            case 'string':
+                clean[key] = data[key];
+                break;
+            default:
+                connection.loginfo(plugin, "skipping unhandled: " + typeof data[key]);
+        }
+    });
+
+    // arrays which might be present
+    ['urls', 'emails', 'messages'].forEach(b => {
+        // collapse to comma separated string, so values get logged
+        if (!data[b]) return;
+
+        if (data[b].length) {
+            clean[b] = data[b].join(',');
+            return;
+        }
+
+        if (typeof(data[b]) == 'object') {
+            // 'messages' is probably a dictionary
+            Object.keys(data[b]).map((k) => {
+                return `${k} : ${data[b][k]}`;
+            }).join(',');
+        }
+    });
+
+    return clean;
+}
+
 exports.parse_response = function (rawData, connection) {
     const plugin = this;
 
@@ -311,50 +362,9 @@ exports.parse_response = function (rawData, connection) {
         return;
     }
 
-    // make cleaned data for logs
-    const dataClean = {symbols: {}};
-    Object.keys(data.symbols).forEach((key) => {
-        const a = data.symbols[key];
-        // transform { name: KEY, score: VAL } -> { KEY: VAL }
-        if (a.name && a.score !== undefined) {
-            dataClean.symbols[ a.name ] = a.score;
-        } else {
-            // unhandled type
-            connection.logerror(plugin, a);
-        }
-    })
-    const wantKeys = ["action", "is_skipped", "required_score", "score"];
-    wantKeys.forEach((key) => {
-        const a = data[key];
-        switch (typeof a) {
-            case 'boolean':
-            case 'number':
-            case 'string':
-                dataClean[key] = a;
-                break;
-            default:
-                connection.loginfo(plugin, "skipping unhandled: " + typeof a);
-        }
-    });
-
-    // arrays which might be present
-    ['urls', 'emails', 'messages'].forEach((b) => {
-        // collapse to comma separated string, so values get logged
-        if (data[b]) {
-            if (data[b].length) {
-                dataClean[b] = data[b].join(',');
-            } else if (typeof(data[b]) == 'object') {
-                // 'messages' is probably a dictionary
-                Object.keys(data[b]).map((k) => {
-                    return k + " : " + data[b][k];
-                }).join(',');
-            }
-        }
-    });
-
     return {
         'data' : data,
-        'log' : dataClean,
+        'log' : plugin.get_clean(data, connection),
     };
 }
 

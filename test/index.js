@@ -3,18 +3,17 @@
 // var Address      = require('address-rfc2821');
 const fixtures     = require('haraka-test-fixtures');
 
-const Connection   = fixtures.connection;
-const Transaction  = fixtures.transaction;
+const connection   = fixtures.connection;
 
 const _set_up = function (done) {
 
     this.plugin = new fixtures.plugin('rspamd');
     this.plugin.register();
-    this.connection = Connection.createConnection();
-    this.connection.transaction = Transaction.createTransaction();
+    this.connection = connection.createConnection();
+    this.connection.init_transaction();
 
     done();
-};
+}
 
 exports.register = {
     setUp : _set_up,
@@ -30,7 +29,7 @@ exports.register = {
         test.equal(true, this.plugin.cfg.reject.spam);
         test.done();
     },
-};
+}
 
 exports.load_rspamd_ini = {
     setUp : _set_up,
@@ -40,7 +39,7 @@ exports.load_rspamd_ini = {
         test.ok(this.plugin.cfg.header.bar);
         test.done();
     },
-};
+}
 
 exports.add_headers = {
     setUp : _set_up,
@@ -88,7 +87,7 @@ exports.add_headers = {
         test.equal(this.connection.transaction.header.headers['X-Rspamd-Bar'], '-');
         test.done();
     }
-};
+}
 
 exports.wants_headers_added = {
     setUp : _set_up,
@@ -123,4 +122,25 @@ exports.wants_headers_added = {
         );
         test.done();
     }
+}
+
+exports.parse_response = {
+    setUp : _set_up,
+    'returns undef on empty string': function (test) {
+        test.expect(1);
+        // console.log(this.connection.transaction);
+        test.equal(
+            this.plugin.parse_response('', this.connection),
+            undefined
+        );
+        test.done();
+    },
+    'returns undef on empty object': function (test) {
+        test.expect(1);
+        test.equal(
+            this.plugin.parse_response('{}', this.connection),
+            undefined
+        );
+        test.done();
+    },
 }

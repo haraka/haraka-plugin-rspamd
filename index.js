@@ -8,7 +8,7 @@ const DSN = require('haraka-dsn');
 
 exports.register = function () {
     this.load_rspamd_ini();
-};
+}
 
 exports.load_rspamd_ini = function () {
     const plugin = this;
@@ -56,7 +56,7 @@ exports.load_rspamd_ini = function () {
     if (!plugin.cfg.subject) {
         plugin.cfg.subject = "[SPAM] %s";
     }
-};
+}
 
 exports.get_options = function (connection) {
     const plugin = this;
@@ -123,8 +123,13 @@ exports.get_options = function (connection) {
     if (connection.transaction.uuid)
         options.headers['Queue-Id'] = connection.transaction.uuid;
 
+    if (connection.tls.enabled) {
+        options.headers['TLS-Cipher'] = connection.tls.cipher.name;
+        options.headers['TLS-Version'] = connection.tls.cipher.version;
+    }
+
     return options;
-};
+}
 
 exports.get_smtp_message = function (r) {
     const plugin = this;
@@ -248,7 +253,7 @@ exports.hook_data_post = function (next, connection) {
 
     connection.transaction.message_stream.pipe(req);
     // pipe calls req.end() asynchronously
-};
+}
 
 exports.wants_skip = function (connection) {
     const plugin = this;
@@ -279,10 +284,63 @@ exports.wants_headers_added = function (rspamd_data) {
     // implicit add_headers=sometimes, based on rspamd response
     if (rspamd_data.action === 'add header') return true;
     return false;
-};
+}
+
+exports.get_clean = function (data, connection) {
+    const plugin = this;
+    const clean = { symbols: {} };
+
+    if (data.symbols) {
+        Object.keys(data.symbols).forEach(key => {
+            const a = data.symbols[key];
+            // transform { name: KEY, score: VAL } -> { KEY: VAL }
+            if (a.name && a.score !== undefined) {
+                clean.symbols[ a.name ] = a.score;
+                return;
+            }
+            // unhandled type
+            connection.logerror(plugin, a);
+        })
+    }
+
+    // objects that may exist
+    ['action', 'is_skipped', 'required_score', 'score'].forEach((key) => {
+        switch (typeof data[key]) {
+            case 'boolean':
+            case 'number':
+            case 'string':
+                clean[key] = data[key];
+                break;
+            default:
+                connection.loginfo(plugin, "skipping unhandled: " + typeof data[key]);
+        }
+    });
+
+    // arrays which might be present
+    ['urls', 'emails', 'messages'].forEach(b => {
+        // collapse to comma separated string, so values get logged
+        if (!data[b]) return;
+
+        if (data[b].length) {
+            clean[b] = data[b].join(',');
+            return;
+        }
+
+        if (typeof(data[b]) == 'object') {
+            // 'messages' is probably a dictionary
+            Object.keys(data[b]).map((k) => {
+                return `${k} : ${data[b][k]}`;
+            }).join(',');
+        }
+    });
+
+    return clean;
+}
 
 exports.parse_response = function (rawData, connection) {
     const plugin = this;
+
+    if (!rawData) return;
 
     let data;
     try {
@@ -295,6 +353,8 @@ exports.parse_response = function (rawData, connection) {
         return;
     }
 
+    if (Object.keys(data).length === 0) return;
+
     if (Object.keys(data).length === 1 && data.error) {
         connection.transaction.results.add(plugin, {
             err: data.error
@@ -302,52 +362,11 @@ exports.parse_response = function (rawData, connection) {
         return;
     }
 
-    // make cleaned data for logs
-    const dataClean = {symbols: {}};
-    Object.keys(data.symbols).forEach((key) => {
-        const a = data.symbols[key];
-        // transform { name: KEY, score: VAL } -> { KEY: VAL }
-        if (a.name && a.score !== undefined) {
-            dataClean.symbols[ a.name ] = a.score;
-        } else {
-            // unhandled type
-            connection.logerror(plugin, a);
-        }
-    });
-    const wantKeys = ["action", "is_skipped", "required_score", "score"];
-    wantKeys.forEach((key) => {
-        const a = data[key];
-        switch (typeof a) {
-            case 'boolean':
-            case 'number':
-            case 'string':
-                dataClean[key] = a;
-                break;
-            default:
-                connection.loginfo(plugin, "skipping unhandled: " + typeof a);
-        }
-    });
-
-    // arrays which might be present
-    ['urls', 'emails', 'messages'].forEach((b) => {
-        // collapse to comma separated string, so values get logged
-        if (data[b]) {
-            if (data[b].length) {
-                dataClean[b] = data[b].join(',');
-            } else if (typeof(data[b]) == 'object') {
-                // 'messages' is probably a dictionary
-                Object.keys(data[b]).map((k) => {
-                    return k + " : " + data[b][k];
-                }).join(',');
-            }
-        }
-    });
-
     return {
         'data' : data,
-        'log' : dataClean,
+        'log' : plugin.get_clean(data, connection),
     };
-};
+}
 
 exports.add_headers = function (connection, data) {
     const plugin = this;
@@ -391,4 +410,4 @@ exports.add_headers = function (connection, data) {
         connection.transaction.remove_header(cfg.header.score);
         connection.transaction.add_header(cfg.header.score, '' + data.score);
     }
-};
+}

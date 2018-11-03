@@ -68,6 +68,13 @@ rspamd.ini
     If false, messages from private IPs will not be scanned by Rspamd.
     If true, messages from private IPs will be scanned by Rspamd.
 
+- check.local\_ip
+
+    Default: false
+
+    If false, messages from localhost will not be scanned by Rspamd.
+    If true, messages from localhost will be scanned by Rspamd.
+
 - dkim.enabled
 
     Default: true

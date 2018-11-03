@@ -18,6 +18,7 @@ exports.load_rspamd_ini = function () {
             '-check.authenticated',
             '+dkim.enabled',
             '-check.private_ip',
+            '-check.localhost',
             '+reject.spam',
             '-reject.authenticated',
             '+rewrite_subject.enabled',
@@ -259,6 +260,8 @@ exports.wants_skip = function (connection) {
     const plugin = this;
 
     if (!plugin.cfg.check.authenticated && connection.notes.auth_user) return true;
+
+    if (connection.remote.is_local) return !plugin.cfg.check.local_ip;
 
     if (!plugin.cfg.check.private_ip && connection.remote.is_private) return true;
 

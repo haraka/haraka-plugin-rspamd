@@ -144,3 +144,61 @@ exports.parse_response = {
         test.done();
     },
 }
+
+exports.skip = {
+    setUp : _set_up,
+    'skip authenticated': function (test) {
+        this.connection.notes.auth_user = "username";
+        this.plugin.cfg.check.authenticated = false;
+
+        test.expect(1);
+        test.equal(this.plugin.wants_skip(this.connection), true);
+        test.done();
+    },
+    'don\'t skip unauthenticated and public ip': function (test) {
+        this.connection.remote.is_local = false;
+        this.connection.remote.is_private = false;
+        this.connection.notes.auth_user = undefined;
+
+        this.plugin.cfg.check.local_ip = false;
+        this.plugin.cfg.check.private_ip = false;
+        this.plugin.cfg.check.authenticated = false;
+
+        test.expect(1);
+        test.equal(this.plugin.wants_skip(this.connection), false);
+        test.done();
+    },
+    'skip localhost if check.local_ip = false and check.private_ip = true': function (test) {
+        this.connection.remote.is_local = true;
+        this.connection.remote.is_private = true;
+
+        this.plugin.cfg.check.local_ip = false;
+        this.plugin.cfg.check.private_ip = true;
+
+        test.expect(1);
+        test.equal(this.plugin.wants_skip(this.connection), true);
+        test.done();
+    },
+    'don\'t skip localhost if check.local_ip = true and check.private_ip = true': function (test) {
+        this.connection.remote.is_local = true;
+        this.connection.remote.is_private = true;
+
+        this.plugin.cfg.check.local_ip = true;
+        this.plugin.cfg.check.private_ip = true;
+
+        test.expect(1);
+        test.equal(this.plugin.wants_skip(this.connection), false);
+        test.done();
+    },
+    'don\'t skip localhost if check.local_ip = true and check.private_ip = false': function (test) {
+        this.connection.remote.is_local = true;
+        this.connection.remote.is_private = true;
+
+        this.plugin.cfg.check.local_ip = true;
+        this.plugin.cfg.check.private_ip = false;
+
+        test.expect(1);
+        test.equal(this.plugin.wants_skip(this.connection), false);
+        test.done();
+    },
+}

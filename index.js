@@ -18,7 +18,7 @@ exports.load_rspamd_ini = function () {
             '-check.authenticated',
             '+dkim.enabled',
             '-check.private_ip',
-            '-check.localhost',
+            '-check.local_ip',
             '+reject.spam',
             '-reject.authenticated',
             '+rewrite_subject.enabled',

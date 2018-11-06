@@ -188,7 +188,7 @@ exports.hook_data_post = function (next, connection) {
     const plugin = this;
 
     if (!connection.transaction) return next();
-    if (plugin.wants_skip(connection)) return next();
+    if (!plugin.should_check(connection)) return next();
 
     let timer;
     const timeout = plugin.cfg.main.timeout || plugin.timeout - 1;
@@ -256,24 +256,41 @@ exports.hook_data_post = function (next, connection) {
     // pipe calls req.end() asynchronously
 }
 
-exports.wants_skip = function (connection) {
+exports.should_check = function (connection) {
     const plugin = this;
 
-    if (!plugin.cfg.check.authenticated && connection.notes.auth_user) return true;
+    if (plugin.cfg.check.authenticated == false && connection.notes.auth_user) {
+        connection.transaction.results.add(plugin, { skip: 'authed'});
+        return false;
+    }
 
-    if (connection.remote.is_local) return !plugin.cfg.check.local_ip;
+    // necessary because local IPs are included in private IPs
+    if (plugin.cfg.check.local_ip == true && connection.remote.is_local) return true;
 
-    if (!plugin.cfg.check.private_ip && connection.remote.is_private) return true;
+    if (plugin.cfg.check.local_ip == false && connection.remote.is_local) {
+        connection.transaction.results.add(plugin, { skip: 'local_ip'});
+        return false;
+    }
 
-    return false;
+    if (plugin.cfg.check.private_ip == false && connection.remote.is_private) {
+        connection.transaction.results.add(plugin, { skip: 'private_ip'});
+        return false;
+    }
+
+    return true;
 }
 
 exports.wants_reject = function (connection, data) {
     const plugin = this;
 
     if (data.action !== 'reject') return false;
-    if (!connection.notes.auth_user && !plugin.cfg.reject.spam) return false;
-    if (connection.notes.auth_user && !plugin.cfg.reject.authenticated) return false;
+
+    if (connection.notes.auth_user) {
+        if (plugin.cfg.reject.authenticated == false) return false;
+    }
+    else {
+        if (plugin.cfg.reject.spam == false) return false;
+    }
 
     return true;
 }

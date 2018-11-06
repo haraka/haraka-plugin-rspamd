@@ -145,27 +145,78 @@ exports.parse_response = {
     },
 }
 
-exports.skip = {
-    setUp : _set_up,
-    'skip authenticated': function (test) {
+function _check_setup (done) {
+
+    this.plugin = new fixtures.plugin('rspamd');
+    this.plugin.register();
+    this.connection = connection.createConnection();
+    this.connection.init_transaction();
+
+    // init defaults
+    this.plugin.cfg.check.local_ip = false;
+    this.plugin.cfg.check.private_ip = false;
+    this.plugin.cfg.check.authenticated = false;
+
+    this.connection.remote.is_local = false;
+    this.connection.remote.is_private = false;
+    this.connection.notes.auth_user = undefined;
+
+    done()
+}
+
+exports.should_check = {
+    setUp : _check_setup,
+    'checks authenticated': function (test) {
+        this.connection.notes.auth_user = "username";
+        this.plugin.cfg.check.authenticated = true;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), true);
+        test.done();
+    },
+    'skips authenticated': function (test) {
         this.connection.notes.auth_user = "username";
         this.plugin.cfg.check.authenticated = false;
 
         test.expect(1);
-        test.equal(this.plugin.wants_skip(this.connection), true);
+        test.equal(this.plugin.should_check(this.connection), false);
         test.done();
     },
-    'don\'t skip unauthenticated and public ip': function (test) {
-        this.connection.remote.is_local = false;
-        this.connection.remote.is_private = false;
-        this.connection.notes.auth_user = undefined;
-
-        this.plugin.cfg.check.local_ip = false;
-        this.plugin.cfg.check.private_ip = false;
-        this.plugin.cfg.check.authenticated = false;
+    'checks local IP': function (test) {
+        this.connection.remote.is_local = true;
+        this.plugin.cfg.check.local_ip = true;
 
         test.expect(1);
-        test.equal(this.plugin.wants_skip(this.connection), false);
+        test.equal(this.plugin.should_check(this.connection), true);
+        test.done();
+    },
+    'skips local IP': function (test) {
+        this.connection.remote.is_local = true;
+        this.plugin.cfg.check.local_ip = false;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), false);
+        test.done();
+    },
+    'checks private IP': function (test) {
+        this.connection.remote.is_private = true;
+        this.plugin.cfg.check.private_ip = true;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), true);
+        test.done();
+    },
+    'skips private IP': function (test) {
+        this.connection.remote.is_private = true;
+        this.plugin.cfg.check.private_ip = false;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), false);
+        test.done();
+    },
+    'checks public ip': function (test) {
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), true);
         test.done();
     },
     'skip localhost if check.local_ip = false and check.private_ip = true': function (test) {
@@ -176,21 +227,10 @@ exports.skip = {
         this.plugin.cfg.check.private_ip = true;
 
         test.expect(1);
-        test.equal(this.plugin.wants_skip(this.connection), true);
+        test.equal(this.plugin.should_check(this.connection), false);
         test.done();
     },
-    'don\'t skip localhost if check.local_ip = true and check.private_ip = true': function (test) {
-        this.connection.remote.is_local = true;
-        this.connection.remote.is_private = true;
-
-        this.plugin.cfg.check.local_ip = true;
-        this.plugin.cfg.check.private_ip = true;
-
-        test.expect(1);
-        test.equal(this.plugin.wants_skip(this.connection), false);
-        test.done();
-    },
-    'don\'t skip localhost if check.local_ip = true and check.private_ip = false': function (test) {
+    'checks localhost if check.local_ip = true and check.private_ip = false': function (test) {
         this.connection.remote.is_local = true;
         this.connection.remote.is_private = true;
 
@@ -198,7 +238,7 @@ exports.skip = {
         this.plugin.cfg.check.private_ip = false;
 
         test.expect(1);
-        test.equal(this.plugin.wants_skip(this.connection), false);
+        test.equal(this.plugin.should_check(this.connection), true);
         test.done();
     },
 }

@@ -1,3 +1,6 @@
+## 1.1.2 - 2018-11-03
+
+- add check.local_ip config option
 
 ## 1.1.1 - 2018-05-10
 

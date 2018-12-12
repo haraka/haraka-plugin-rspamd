@@ -19,6 +19,7 @@ exports.load_rspamd_ini = function () {
             '+dkim.enabled',
             '-check.private_ip',
             '-check.local_ip',
+            '-check.relay',
             '+reject.spam',
             '-reject.authenticated',
             '+rewrite_subject.enabled',
@@ -259,25 +260,34 @@ exports.hook_data_post = function (next, connection) {
 exports.should_check = function (connection) {
     const plugin = this;
 
+    let result = true;  // default
+
     if (plugin.cfg.check.authenticated == false && connection.notes.auth_user) {
         connection.transaction.results.add(plugin, { skip: 'authed'});
-        return false;
+        result = false;
     }
 
-    // necessary because local IPs are included in private IPs
-    if (plugin.cfg.check.local_ip == true && connection.remote.is_local) return true;
+    if (plugin.cfg.check.relay == false && connection.relaying) {
+        connection.transaction.results.add(plugin, { skip: 'relay'});
+        result = false;
+    }
 
     if (plugin.cfg.check.local_ip == false && connection.remote.is_local) {
         connection.transaction.results.add(plugin, { skip: 'local_ip'});
-        return false;
+        result = false;
     }
 
     if (plugin.cfg.check.private_ip == false && connection.remote.is_private) {
-        connection.transaction.results.add(plugin, { skip: 'private_ip'});
-        return false;
+        if (plugin.cfg.check.local_ip == true && connection.remote.is_local) {
+            // local IPs are included in private IPs
+        }
+        else {
+            connection.transaction.results.add(plugin, { skip: 'private_ip'});
+            result = false;
+        }
     }
 
-    return true;
+    return result;
 }
 
 exports.wants_reject = function (connection, data) {

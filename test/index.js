@@ -182,6 +182,30 @@ exports.should_check = {
         test.equal(this.plugin.should_check(this.connection), false);
         test.done();
     },
+    'skips relaying': function (test) {
+        this.connection.relaying = true;
+        this.plugin.cfg.check.relay = false;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), false);
+        test.done();
+    },
+    'checks not relaying': function (test) {
+        this.connection.relaying = false;
+        this.plugin.cfg.check.relay = false;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), true);
+        test.done();
+    },
+    'checks relaying when enabled': function (test) {
+        this.connection.relaying = true;
+        this.plugin.cfg.check.relay = true;
+
+        test.expect(1);
+        test.equal(this.plugin.should_check(this.connection), true);
+        test.done();
+    },
     'checks local IP': function (test) {
         this.connection.remote.is_local = true;
         this.plugin.cfg.check.local_ip = true;

@@ -1,3 +1,8 @@
+
+## 1.1.3 - 2018-12-NN
+
+- add check.relay option
+
 ## 1.1.2 - 2018-11-03
 
 - add check.local_ip config option

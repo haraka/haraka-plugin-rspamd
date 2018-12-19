@@ -61,6 +61,12 @@ rspamd.ini
 
     If true, messages from authenticated users will be scanned by Rspamd.
 
+- check.relay
+
+    Default: false
+
+    If true, messages from relay clients will be scanned by Rspamd.
+
 - check.private\_ip
 
     Default: false

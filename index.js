@@ -180,7 +180,14 @@ exports.do_milter_headers = function (connection, data) {
 
     if (data.milter.add_headers) {
         Object.keys(data.milter.add_headers).forEach((key) => {
-            connection.transaction.add_header(key, data.milter.add_headers[key]);
+            const header_value = data.milter.add_headers[key];
+            if (!header_value) return;
+
+            if (typeof header_value === 'object') {
+                connection.transaction.add_header(key, header_value.value);
+            } else {
+                connection.transaction.add_header(key, header_value);
+            }
         })
     }
 }

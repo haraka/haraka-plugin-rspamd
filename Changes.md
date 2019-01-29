@@ -1,5 +1,9 @@
 
-## 1.1.3 - 2018-12-NN
+## 1.1.4 - 2019-01-28
+
+- fixed "TypeError: value.replace is not a function"
+
+## 1.1.3 - 2018-12-19
 
 - add check.relay option
 

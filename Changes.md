@@ -1,4 +1,8 @@
 
+## 1.1.5 - 2019-04-01
+
+- store symbols in results (for other plugins to inspect)
+
 ## 1.1.4 - 2019-01-28
 
 - fixed "TypeError: value.replace is not a function"
@@ -26,6 +30,6 @@
 - support 'rewrite subject' action
 
  
-## 1.0.0 - 201_-__-__
+## 1.0.0 - 2017-09-11
 
 - initial release

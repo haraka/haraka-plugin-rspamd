@@ -233,9 +233,7 @@ exports.hook_data_post = function (next, connection) {
             if (!connection.transaction) return nextOnce();
 
             connection.transaction.results.add(plugin, r.log);
-            if (r.data.symbols) {
-                connection.transaction.results.add(plugin, { symbols: r.data.symbols });
-            }
+            if (r.data.symbols) connection.transaction.results.add(plugin, { symbols: r.data.symbols });
 
             const smtp_message = plugin.get_smtp_message(r);
 

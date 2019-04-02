@@ -157,7 +157,7 @@ exports.do_rewrite = function (connection, data) {
     connection.transaction.add_header('Subject', new_subject);
 }
 
-exports.do_dkim = function (connection, data) {
+exports.add_dkim_header = function (connection, data) {
     const plugin = this;
 
     if (!plugin.cfg.dkim.enabled) return;
@@ -233,6 +233,9 @@ exports.hook_data_post = function (next, connection) {
             if (!connection.transaction) return nextOnce();
 
             connection.transaction.results.add(plugin, r.log);
+            if (r.data.symbols) {
+                connection.transaction.results.add(plugin, { symbols: r.data.symbols });
+            }
 
             const smtp_message = plugin.get_smtp_message(r);
 
@@ -245,7 +248,7 @@ exports.hook_data_post = function (next, connection) {
                 nextOnce(DENY, smtp_message || plugin.cfg.reject.message);
             }
             else {
-                plugin.do_dkim(connection, r.data);
+                plugin.add_dkim_header(connection, r.data);
                 plugin.do_milter_headers(connection, r.data);
                 plugin.add_headers(connection, r.data);
 

@@ -185,7 +185,8 @@ exports.do_milter_headers = function (connection, data) {
 
             if (typeof header_value === 'object') {
                 connection.transaction.add_header(key, header_value.value);
-            } else {
+            }
+            else {
                 connection.transaction.add_header(key, header_value);
             }
         })

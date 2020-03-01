@@ -24,6 +24,10 @@ rspamd.ini
 
     Port Rspamd is listening on.
 
+- unix_socket
+
+    Path to a unix socket to connect to.  If set, overrides host and port.
+
 - add\_headers
 
     Default: sometimes

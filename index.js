@@ -73,7 +73,8 @@ exports.get_options = function (connection) {
 
     if (plugin.cfg.main.unix_socket) {
         options.socketPath = plugin.cfg.main.unix_socket;
-    } else {
+    }
+    else {
         options.port = plugin.cfg.main.port;
         options.host = plugin.cfg.main.host;
     }

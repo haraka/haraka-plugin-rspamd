@@ -1,22 +1,33 @@
+
+## 1.1.N - 2020-MM-DD
+
+- replace nodeunit with mocha
+
+
 ## 1.1.6 - 2020-02-29
 
 - Allow connecting to rspamd via unix sockets
+
 
 ## 1.1.5 - 2019-04-01
 
 - store symbols in results (for other plugins to inspect)
 
+
 ## 1.1.4 - 2019-01-28
 
 - fixed "TypeError: value.replace is not a function"
+
 
 ## 1.1.3 - 2018-12-19
 
 - add check.relay option
 
+
 ## 1.1.2 - 2018-11-03
 
 - add check.local_ip config option
+
 
 ## 1.1.1 - 2018-05-10
 

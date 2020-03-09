@@ -67,11 +67,17 @@ exports.get_options = function (connection) {
     // https://github.com/vstakhov/rspamd/blob/master/rules/http_headers.lua
     const options = {
         headers: {},
-        port: plugin.cfg.main.port,
-        host: plugin.cfg.main.host,
         path: '/checkv2',
         method: 'POST',
     };
+
+    if (plugin.cfg.main.unix_socket) {
+        options.socketPath = plugin.cfg.main.unix_socket;
+    }
+    else {
+        options.port = plugin.cfg.main.port;
+        options.host = plugin.cfg.main.host;
+    }
 
     if (connection.notes.auth_user) {
         options.headers.User = connection.notes.auth_user;

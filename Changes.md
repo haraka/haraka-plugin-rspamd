@@ -1,3 +1,6 @@
+## 1.1.6 - 2020-02-29
+
+- Allow connecting to rspamd via unix sockets
 
 ## 1.1.5 - 2019-04-01
 

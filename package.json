@@ -4,9 +4,8 @@
   "description": "Haraka plugin for rspamd",
   "main": "index.js",
   "scripts": {
-    "lint": "npx eslint *.js test/**/*.js",
-    "lintfix": "./node_modules/.bin/eslint --fix *.js test/**/*.js",
-    "cover": "npx istanbul cover npm run test",
+    "lint": "npx eslint *.js test",
+    "lintfix": "npx eslint --fix *.js test",
     "test": "npx mocha"
   },
   "repository": {
@@ -25,10 +24,10 @@
   },
   "homepage": "https://github.com/haraka/haraka-plugin-rspamd#readme",
   "devDependencies": {
-    "eslint": ">=4",
+    "eslint": ">=8",
     "eslint-plugin-haraka": "*",
     "haraka-test-fixtures": "*",
-    "mocha": "*"
+    "mocha": ">=9"
   },
   "dependencies": {
     "haraka-dsn": "*"

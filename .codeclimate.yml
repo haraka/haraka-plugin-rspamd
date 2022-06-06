@@ -1,9 +1,9 @@
-engines: 
+engines:
   eslint:
     enabled: true
-    channel: "eslint-3"
+    channel: "eslint-8"
     config:
-      config: ".eslintrc.json"
+      config: ".eslintrc.yaml"
 
 ratings:
    paths:

@@ -9,7 +9,8 @@ function _set_up (done) {
   this.plugin = new fixtures.plugin('rspamd');
   this.plugin.register();
   this.connection = connection.createConnection();
-  this.connection.init_transaction();
+  this.connection.transaction = fixtures.transaction.createTransaction()
+  // this.connection.init_transaction();
 
   done();
 }
@@ -39,7 +40,6 @@ describe('add_headers', function () {
   it('add_headers exists as function', function (done) {
     // console.log(this.plugin.cfg);
     assert.equal('function', typeof this.plugin.add_headers);
-    // assert.ok(!this.plugin.score_too_high(this.connection, {score: 5}));
     done();
   })
 
@@ -62,9 +62,9 @@ describe('add_headers', function () {
     };
     this.plugin.cfg.main.add_headers = 'always';
     this.plugin.add_headers(this.connection, test_data);
-    assert.equal(this.connection.transaction.header.headers['X-Rspamd-Score'], '1.1');
-    assert.equal(this.connection.transaction.header.headers['X-Rspamd-Bar'], '+');
-    assert.equal(this.connection.transaction.header.headers['X-Rspamd-Report'], 'FOO(0.1) BAR(1)');
+    assert.deepEqual(this.connection.transaction.header.headers['x-rspamd-score'], [ '1.1' ]);
+    assert.deepEqual(this.connection.transaction.header.headers['x-rspamd-bar'], ['+']);
+    assert.deepEqual(this.connection.transaction.header.headers['x-rspamd-report'], ['FOO(0.1) BAR(1)']);
     done();
   })
 
@@ -75,8 +75,8 @@ describe('add_headers', function () {
     this.plugin.cfg.main.add_headers = 'always';
     this.plugin.add_headers(this.connection, test_data);
     // console.log(this.connection.transaction.header);
-    assert.equal(this.connection.transaction.header.headers['X-Rspamd-Score'], '-1');
-    assert.equal(this.connection.transaction.header.headers['X-Rspamd-Bar'], '-');
+    assert.deepEqual(this.connection.transaction.header.headers['x-rspamd-score'], ['-1']);
+    assert.deepEqual(this.connection.transaction.header.headers['x-rspamd-bar'], ['-']);
     done();
   })
 })

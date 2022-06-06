@@ -1,7 +1,10 @@
+### Unreleased
 
-## 1.1.N - 2020-MM-DD
+## 1.1.7 - 2022-06-05
 
-- replace nodeunit with mocha
+- ci: replace travis & appveyor with GitHub actions
+- test: replace nodeunit with mocha
+- test: update header checks against lower cased header names
 
 
 ## 1.1.6 - 2020-02-29

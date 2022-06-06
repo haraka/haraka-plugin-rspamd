@@ -1,7 +1,9 @@
 ### Unreleased
-## 1.1.N - 2020-MM-DD
 
-- replace nodeunit with mocha
+## 1.1.7 - 2022-06-05
+
+- ci: replace travis & appveyor with GitHub actions
+- test: replace nodeunit with mocha
 
 
 ## 1.1.6 - 2020-02-29

@@ -4,6 +4,7 @@
 
 - ci: replace travis & appveyor with GitHub actions
 - test: replace nodeunit with mocha
+- test: update header checks against lower cased header names
 
 
 ## 1.1.6 - 2020-02-29

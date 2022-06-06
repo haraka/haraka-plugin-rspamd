@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "npx eslint *.js test",
     "lintfix": "npx eslint --fix *.js test",
-    "test": "npx mocha"
+    "test": "npx _mocha"
   },
   "repository": {
     "type": "git",

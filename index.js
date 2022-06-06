@@ -357,7 +357,7 @@ exports.get_clean = function (data, connection) {
         clean[key] = data[key];
         break;
       default:
-        connection.loginfo(plugin, "skipping unhandled: " + typeof data[key]);
+        connection.loginfo(plugin, `skipping unhandled: ${  typeof data[key]}`);
     }
   });
 
@@ -393,7 +393,7 @@ exports.parse_response = function (rawData, connection) {
   }
   catch (err) {
     connection.transaction.results.add(plugin, {
-      err: 'parse failure: ' + err.message
+      err: `parse failure: ${  err.message}`
     });
     return;
   }
@@ -408,7 +408,7 @@ exports.parse_response = function (rawData, connection) {
   }
 
   return {
-    'data' : data,
+    data,
     'log' : plugin.get_clean(data, connection),
   };
 }
@@ -442,7 +442,7 @@ exports.add_headers = function (connection, data) {
     const prettySymbols = [];
     for (const k in data.symbols) {
       if (data.symbols[k].score) {
-        prettySymbols.push(data.symbols[k].name + '(' + data.symbols[k].score + ')');
+        prettySymbols.push(`${data.symbols[k].name  }(${  data.symbols[k].score  })`);
       }
     }
     connection.transaction.remove_header(cfg.header.report);
@@ -452,6 +452,6 @@ exports.add_headers = function (connection, data) {
 
   if (cfg.header && cfg.header.score) {
     connection.transaction.remove_header(cfg.header.score);
-    connection.transaction.add_header(cfg.header.score, '' + data.score);
+    connection.transaction.add_header(cfg.header.score, `${  data.score}`);
   }
 }

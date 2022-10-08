@@ -185,15 +185,26 @@ exports.do_milter_headers = function (connection, data) {
   }
 
   if (data.milter.add_headers) {
+    connection.logdebug("milter.add_headers: " + JSON.stringify(data.milter.add_headers), plugin);
     Object.keys(data.milter.add_headers).forEach((key) => {
-      const header_value = data.milter.add_headers[key];
-      if (!header_value) return;
+      const header_values = data.milter.add_headers[key];
+      if (!header_values) return;
 
-      if (typeof header_value === 'object') {
-        connection.transaction.add_header(key, header_value.value);
+      if (Object.prototype.toString.call(header_values) == '[object Array]') {
+        header_values.forEach(function (header_value, header_index) {
+          if (typeof header_value === 'object') {
+            connection.transaction.add_header(key, header_value.value);
+          }
+          else {
+            connection.transaction.add_header(key, header_value);
+          }
+        });
+      }
+      else if (typeof header_values === 'object') {
+        connection.transaction.add_header(key, header_values.value);
       }
       else {
-        connection.transaction.add_header(key, header_value);
+        connection.transaction.add_header(key, header_values);
       }
     })
   }

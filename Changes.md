@@ -1,5 +1,7 @@
 ### Unreleased
 
+- Update milter headers handling to be compatible with rspamd 3.3 preserving compatibility with older versions
+
 
 ### [1.1.8] - 2022-06-06
 

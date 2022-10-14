@@ -185,7 +185,7 @@ exports.do_milter_headers = function (connection, data) {
   }
 
   if (data.milter.add_headers) {
-    connection.logdebug("milter.add_headers: " + JSON.stringify(data.milter.add_headers), plugin);
+    connection.logdebug(`milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`, plugin);
     Object.keys(data.milter.add_headers).forEach((key) => {
       const header_values = data.milter.add_headers[key];
       if (!header_values) return;

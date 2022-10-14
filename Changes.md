@@ -1,6 +1,9 @@
 ### Unreleased
 
-- Update milter headers handling to be compatible with rspamd 3.3 preserving compatibility with older versions
+
+### [1.2.0] - 2022-10-14
+
+- Make milter header handling compatible with rspamd 3.3 (#30)
 
 
 ### [1.1.8] - 2022-06-06
@@ -61,3 +64,4 @@
 
 
 [1.1.8]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.8
+[1.1.9]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.9

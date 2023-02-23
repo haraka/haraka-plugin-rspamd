@@ -26,6 +26,8 @@ exports.load_rspamd_ini = function () {
       '+rmilter_headers.enabled',
       '+soft_reject.enabled',
       '+smtp_message.enabled',
+      '-defer.error',
+      '-defer.timeout',
     ],
   }, () => {
     plugin.load_rspamd_ini();
@@ -231,6 +233,7 @@ exports.hook_data_post = function (next, connection) {
     if (!connection) return;
     if (!connection.transaction) return;
     connection.transaction.results.add(plugin, {err: 'timeout'});
+    if (plugin.cfg.defer.timeout) return nextOnce(DENYSOFT, 'Rspamd scan timeout');
     nextOnce();
   }, timeout * 1000);
 
@@ -242,13 +245,16 @@ exports.hook_data_post = function (next, connection) {
     res.on('data', (chunk) => { rawData += chunk; });
 
     res.on('end', () => {
+      if (!connection.transaction) return nextOnce(); //client gone
+
       const r = plugin.parse_response(rawData, connection);
-      if (!r || !r.data || !r.log) return nextOnce();
+      if (!r || !r.data || !r.log) {
+        if (plugin.cfg.defer.error) return nextOnce(DENYSOFT, 'Rspamd scan error');
+        return nextOnce();
+      }
 
       r.log.emit = true; // spit out a log entry
       r.log.time = (Date.now() - start)/1000;
-
-      if (!connection.transaction) return nextOnce();
 
       connection.transaction.results.add(plugin, r.log);
       if (r.data.symbols) connection.transaction.results.add(plugin, { symbols: r.data.symbols });
@@ -274,8 +280,9 @@ exports.hook_data_post = function (next, connection) {
   })
 
   req.on('error', (err) => {
-    if (!connection || !connection.transaction) return;
+    if (!connection?.transaction) return nextOnce(); // client gone
     connection.transaction.results.add(plugin, { err: err.message});
+    if (plugin.cfg.defer.error) return nextOnce(DENYSOFT, 'Rspamd scan error');
     nextOnce();
   });
 

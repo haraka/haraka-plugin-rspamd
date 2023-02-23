@@ -3,7 +3,9 @@
 
 ### [1.3.0] - 2023-02-23
 
-- add defer options, similar to spamassassin.js #32
+- add: defer options, similar to spamassassin.js #32
+- es6: replace Object.keys().forEach with for...of
+- fix: wrap milter header adds in try/catch, fixes #28
 
 
 ### [1.2.0] - 2022-10-14
@@ -70,4 +72,5 @@
 
 [1.1.8]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.8
 [1.1.9]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.9
+[1.2.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.2.0
 [1.3.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.0

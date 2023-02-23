@@ -280,7 +280,7 @@ exports.hook_data_post = function (next, connection) {
   })
 
   req.on('error', (err) => {
-    if (!connection.transaction) return nextOnce(); // client gone
+    if (!connection?.transaction) return nextOnce(); // client gone
     connection.transaction.results.add(plugin, { err: err.message});
     if (plugin.cfg.defer.error) return nextOnce(DENYSOFT, 'Rspamd scan error');
     nextOnce();

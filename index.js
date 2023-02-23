@@ -180,9 +180,9 @@ exports.do_milter_headers = function (connection, data) {
   if (!data.milter) return;
 
   if (data.milter.remove_headers) {
-    Object.keys(data.milter.remove_headers).forEach((key) => {
+    for (const key of Object.keys(data.milter.remove_headers)) {
       connection.transaction.remove_header(key);
-    })
+    }
   }
 
   if (data.milter.add_headers) {

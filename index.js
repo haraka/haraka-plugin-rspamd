@@ -246,13 +246,13 @@ exports.hook_data_post = function (next, connection) {
 
     res.on('end', () => {
       if (!connection.transaction) return nextOnce(); //client gone
-      
+
       const r = plugin.parse_response(rawData, connection);
       if (!r || !r.data || !r.log) {
         if (plugin.cfg.defer.error) return nextOnce(DENYSOFT, 'Rspamd scan error');
         return nextOnce();
       }
-      
+
       r.log.emit = true; // spit out a log entry
       r.log.time = (Date.now() - start)/1000;
 

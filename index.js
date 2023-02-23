@@ -175,9 +175,8 @@ exports.add_dkim_header = function (connection, data) {
 }
 
 exports.do_milter_headers = function (connection, data) {
-  const plugin = this;
 
-  if (!plugin.cfg.rmilter_headers.enabled) return;
+  if (!this.cfg.rmilter_headers.enabled) return;
   if (!data.milter) return;
 
   if (data.milter.remove_headers) {
@@ -187,8 +186,8 @@ exports.do_milter_headers = function (connection, data) {
   }
 
   if (data.milter.add_headers) {
-    connection.logdebug(`milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`, plugin);
-    Object.keys(data.milter.add_headers).forEach((key) => {
+    connection.logdebug(this, `milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`);
+    for (const key of Object.keys(data.milter.add_headers)) {
       const header_values = data.milter.add_headers[key];
       if (!header_values) return;
 
@@ -208,7 +207,7 @@ exports.do_milter_headers = function (connection, data) {
       else {
         connection.transaction.add_header(key, header_values);
       }
-    })
+    }
   }
 }
 

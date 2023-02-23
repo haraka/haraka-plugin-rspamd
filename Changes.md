@@ -1,6 +1,11 @@
 ### Unreleased
 
 
+### [1.3.0] - 2023-02-23
+
+- add defer options, similar to spamassassin.js #32
+
+
 ### [1.2.0] - 2022-10-14
 
 - Make milter header handling compatible with rspamd 3.3 (#30)
@@ -65,3 +70,4 @@
 
 [1.1.8]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.8
 [1.1.9]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.9
+[1.3.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.0

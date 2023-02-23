@@ -120,8 +120,8 @@ exports.get_options = function (connection) {
   const rcpts = connection.transaction.rcpt_to;
   if (rcpts) {
     options.headers.Rcpt = [];
-    for (let i=0; i < rcpts.length; i++) {
-      options.headers.Rcpt.push(rcpts[i].address());
+    for (const rcpt of rcpts) {
+      options.headers.Rcpt.push(rcpt.address());
     }
 
     // for per-user options
@@ -226,12 +226,12 @@ exports.hook_data_post = function (next, connection) {
     clearTimeout(timer);
     if (calledNext) return;
     calledNext=true;
+    if (!connection?.transaction) return;
     next(code, msg);
   }
 
   timer = setTimeout(() => {
-    if (!connection) return;
-    if (!connection.transaction) return;
+    if (!connection?.transaction) return;
     connection.transaction.results.add(plugin, {err: 'timeout'});
     if (plugin.cfg.defer.timeout) return nextOnce(DENYSOFT, 'Rspamd scan timeout');
     nextOnce();

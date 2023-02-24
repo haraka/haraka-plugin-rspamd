@@ -33,37 +33,36 @@ exports.load_rspamd_ini = function () {
     plugin.load_rspamd_ini();
   });
 
-  if (!plugin.cfg.reject.message) {
-    plugin.cfg.reject.message = 'Detected as spam';
+  if (!this.cfg.reject.message) {
+    this.cfg.reject.message = 'Detected as spam';
   }
 
-  if (!plugin.cfg.soft_reject.message) {
-    plugin.cfg.soft_reject.message = 'Deferred by policy';
+  if (!this.cfg.soft_reject.message) {
+    this.cfg.soft_reject.message = 'Deferred by policy';
   }
 
-  if (!plugin.cfg.spambar) {
-    plugin.cfg.spambar = { positive: '+', negative: '-', neutral: '/' };
+  if (!this.cfg.spambar) {
+    this.cfg.spambar = { positive: '+', negative: '-', neutral: '/' };
   }
 
-  if (!plugin.cfg.main.port) plugin.cfg.main.port = 11333;
-  if (!plugin.cfg.main.host) plugin.cfg.main.host = 'localhost';
+  if (!this.cfg.main.port) this.cfg.main.port = 11333;
+  if (!this.cfg.main.host) this.cfg.main.host = 'localhost';
 
-  if (!plugin.cfg.main.add_headers) {
-    if (plugin.cfg.main.always_add_headers === true) {
-      plugin.cfg.main.add_headers = 'always';
+  if (!this.cfg.main.add_headers) {
+    if (this.cfg.main.always_add_headers === true) {
+      this.cfg.main.add_headers = 'always';
     }
     else {
-      plugin.cfg.main.add_headers = 'sometimes';
+      this.cfg.main.add_headers = 'sometimes';
     }
   }
 
-  if (!plugin.cfg.subject) {
-    plugin.cfg.subject = "[SPAM] %s";
+  if (!this.cfg.subject) {
+    this.cfg.subject = "[SPAM] %s";
   }
 }
 
 exports.get_options = function (connection) {
-  const plugin = this;
 
   // https://rspamd.com/doc/architecture/protocol.html
   // https://github.com/vstakhov/rspamd/blob/master/rules/http_headers.lua
@@ -73,12 +72,12 @@ exports.get_options = function (connection) {
     method: 'POST',
   };
 
-  if (plugin.cfg.main.unix_socket) {
-    options.socketPath = plugin.cfg.main.unix_socket;
+  if (this.cfg.main.unix_socket) {
+    options.socketPath = this.cfg.main.unix_socket;
   }
   else {
-    options.port = plugin.cfg.main.port;
-    options.host = plugin.cfg.main.host;
+    options.port = this.cfg.main.port;
+    options.host = this.cfg.main.host;
   }
 
   if (connection.notes.auth_user) {
@@ -142,9 +141,8 @@ exports.get_options = function (connection) {
 }
 
 exports.get_smtp_message = function (r) {
-  const plugin = this;
 
-  if (!plugin.cfg.smtp_message.enabled || !r.data.messages) return;
+  if (!this.cfg.smtp_message.enabled || !r.data.messages) return;
   if (typeof(r.data.messages) !== 'object') return;
   if (!r.data.messages.smtp_message) return;
 
@@ -152,12 +150,11 @@ exports.get_smtp_message = function (r) {
 }
 
 exports.do_rewrite = function (connection, data) {
-  const plugin = this;
 
-  if (!plugin.cfg.rewrite_subject.enabled) return false;
+  if (!this.cfg.rewrite_subject.enabled) return false;
   if (data.action !== 'rewrite subject') return false;
 
-  const rspamd_subject = data.subject || plugin.cfg.subject;
+  const rspamd_subject = data.subject || this.cfg.subject;
   const old_subject = connection.transaction.header.get('Subject') || '';
   const new_subject = rspamd_subject.replace('%s', old_subject);
 
@@ -166,9 +163,8 @@ exports.do_rewrite = function (connection, data) {
 }
 
 exports.add_dkim_header = function (connection, data) {
-  const plugin = this;
 
-  if (!plugin.cfg.dkim.enabled) return;
+  if (!this.cfg.dkim.enabled) return;
   if (!data['dkim-signature']) return;
 
   connection.transaction.add_header('DKIM-Signature', data['dkim-signature']);
@@ -295,31 +291,30 @@ exports.hook_data_post = function (next, connection) {
 }
 
 exports.should_check = function (connection) {
-  const plugin = this;
 
   let result = true;  // default
 
-  if (plugin.cfg.check.authenticated == false && connection.notes.auth_user) {
-    connection.transaction.results.add(plugin, { skip: 'authed'});
+  if (this.cfg.check.authenticated == false && connection.notes.auth_user) {
+    connection.transaction.results.add(this, { skip: 'authed'});
     result = false;
   }
 
-  if (plugin.cfg.check.relay == false && connection.relaying) {
-    connection.transaction.results.add(plugin, { skip: 'relay'});
+  if (this.cfg.check.relay == false && connection.relaying) {
+    connection.transaction.results.add(this, { skip: 'relay'});
     result = false;
   }
 
-  if (plugin.cfg.check.local_ip == false && connection.remote.is_local) {
-    connection.transaction.results.add(plugin, { skip: 'local_ip'});
+  if (this.cfg.check.local_ip == false && connection.remote.is_local) {
+    connection.transaction.results.add(this, { skip: 'local_ip'});
     result = false;
   }
 
-  if (plugin.cfg.check.private_ip == false && connection.remote.is_private) {
-    if (plugin.cfg.check.local_ip == true && connection.remote.is_local) {
+  if (this.cfg.check.private_ip == false && connection.remote.is_private) {
+    if (this.cfg.check.local_ip == true && connection.remote.is_local) {
       // local IPs are included in private IPs
     }
     else {
-      connection.transaction.results.add(plugin, { skip: 'private_ip'});
+      connection.transaction.results.add(this, { skip: 'private_ip'});
       result = false;
     }
   }
@@ -328,25 +323,23 @@ exports.should_check = function (connection) {
 }
 
 exports.wants_reject = function (connection, data) {
-  const plugin = this;
 
   if (data.action !== 'reject') return false;
 
   if (connection.notes.auth_user) {
-    if (plugin.cfg.reject.authenticated == false) return false;
+    if (this.cfg.reject.authenticated == false) return false;
   }
   else {
-    if (plugin.cfg.reject.spam == false) return false;
+    if (this.cfg.reject.spam == false) return false;
   }
 
   return true;
 }
 
 exports.wants_headers_added = function (rspamd_data) {
-  const plugin = this;
 
-  if (plugin.cfg.main.add_headers === 'never') return false;
-  if (plugin.cfg.main.add_headers === 'always') return true;
+  if (this.cfg.main.add_headers === 'never') return false;
+  if (this.cfg.main.add_headers === 'always') return true;
 
   // implicit add_headers=sometimes, based on rspamd response
   if (rspamd_data.action === 'add header') return true;
@@ -354,7 +347,6 @@ exports.wants_headers_added = function (rspamd_data) {
 }
 
 exports.get_clean = function (data, connection) {
-  const plugin = this;
   const clean = { symbols: {} };
 
   if (data.symbols) {
@@ -366,12 +358,13 @@ exports.get_clean = function (data, connection) {
         return;
       }
       // unhandled type
-      connection.logerror(plugin, a);
+      connection.logerror(this, a);
     })
   }
 
   // objects that may exist
-  ['action', 'is_skipped', 'required_score', 'score'].forEach((key) => {
+  const skip_keys = ['action', 'is_skipped', 'required_score', 'score'];
+  for (const key of skip_keys) {
     switch (typeof data[key]) {
       case 'boolean':
       case 'number':
@@ -379,12 +372,13 @@ exports.get_clean = function (data, connection) {
         clean[key] = data[key];
         break;
       default:
-        connection.loginfo(plugin, `skipping unhandled: ${  typeof data[key]}`);
+        connection.loginfo(this, `skipping unhandled: ${typeof data[key]}`);
     }
-  });
+  }
 
   // arrays which might be present
-  ['urls', 'emails', 'messages'].forEach(b => {
+  const arrays = ['urls', 'emails', 'messages'];
+  for (const b of arrays) {
     // collapse to comma separated string, so values get logged
     if (!data[b]) return;
 
@@ -399,14 +393,12 @@ exports.get_clean = function (data, connection) {
         return `${k} : ${data[b][k]}`;
       }).join(',');
     }
-  });
+  }
 
   return clean;
 }
 
 exports.parse_response = function (rawData, connection) {
-  const plugin = this;
-
   if (!rawData) return;
 
   let data;
@@ -414,8 +406,8 @@ exports.parse_response = function (rawData, connection) {
     data = JSON.parse(rawData);
   }
   catch (err) {
-    connection.transaction.results.add(plugin, {
-      err: `parse failure: ${  err.message}`
+    connection.transaction.results.add(this, {
+      err: `parse failure: ${err.message}`
     });
     return;
   }
@@ -423,23 +415,20 @@ exports.parse_response = function (rawData, connection) {
   if (Object.keys(data).length === 0) return;
 
   if (Object.keys(data).length === 1 && data.error) {
-    connection.transaction.results.add(plugin, {
-      err: data.error
-    });
+    connection.transaction.results.add(this, { err: data.error });
     return;
   }
 
   return {
     data,
-    'log' : plugin.get_clean(data, connection),
+    'log' : this.get_clean(data, connection),
   };
 }
 
 exports.add_headers = function (connection, data) {
-  const plugin = this;
-  const cfg = plugin.cfg;
+  const cfg = this.cfg;
 
-  if (!plugin.wants_headers_added(data)) return;
+  if (!this.wants_headers_added(data)) return;
 
   if (cfg.header && cfg.header.bar) {
     let spamBar = '';
@@ -464,7 +453,7 @@ exports.add_headers = function (connection, data) {
     const prettySymbols = [];
     for (const k in data.symbols) {
       if (data.symbols[k].score) {
-        prettySymbols.push(`${data.symbols[k].name  }(${  data.symbols[k].score  })`);
+        prettySymbols.push(`${data.symbols[k].name}(${data.symbols[k].score})`);
       }
     }
     connection.transaction.remove_header(cfg.header.report);
@@ -474,6 +463,6 @@ exports.add_headers = function (connection, data) {
 
   if (cfg.header && cfg.header.score) {
     connection.transaction.remove_header(cfg.header.score);
-    connection.transaction.add_header(cfg.header.score, `${  data.score}`);
+    connection.transaction.add_header(cfg.header.score, `${data.score}`);
   }
 }

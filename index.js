@@ -186,7 +186,7 @@ exports.do_milter_headers = function (connection, data) {
       connection.logdebug(this, `milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`);
       for (const key of Object.keys(data.milter.add_headers)) {
         const header_values = data.milter.add_headers[key];
-        if (!header_values) return;
+        if (!header_values) continue;
 
         if (Object.prototype.toString.call(header_values) == '[object Array]') {
           header_values.forEach(function (header_value, header_index) {
@@ -380,11 +380,11 @@ exports.get_clean = function (data, connection) {
   const arrays = ['urls', 'emails', 'messages'];
   for (const b of arrays) {
     // collapse to comma separated string, so values get logged
-    if (!data[b]) return;
+    if (!data[b]) continue;
 
     if (data[b].length) {
       clean[b] = data[b].join(',');
-      return;
+      continue;
     }
 
     if (typeof(data[b]) == 'object') {

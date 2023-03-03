@@ -1,6 +1,11 @@
 ### Unreleased
 
 
+### [1.3.1] - 2023-03-02
+
+- fix for loop returns (#35)
+
+
 ### [1.3.0] - 2023-02-23
 
 - add: defer options, similar to spamassassin.js #32
@@ -74,3 +79,4 @@
 [1.1.9]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.9
 [1.2.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.2.0
 [1.3.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.0
+[1.3.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.1

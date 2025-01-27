@@ -10,7 +10,7 @@ function _set_up(done) {
   this.plugin = new fixtures.plugin('rspamd')
   this.plugin.register()
   this.connection = connection.createConnection()
-  this.connection.init_transaction();
+  this.connection.init_transaction()
 
   done()
 }
@@ -262,18 +262,17 @@ describe.skip('data_post', function () {
     this.connection.remote.ip = '209.85.208.48'
     this.connection.hello.host = 'mail-ed1-f48.google.com'
 
-    const specimen = fs.readFileSync('./test/fixtures/spam.eml', 'utf8');
+    const specimen = fs.readFileSync('./test/fixtures/spam.eml', 'utf8')
 
     for (const line of specimen.split(/\r?\n/g)) {
-      this.connection.transaction.add_data(`${line}\r\n`);
+      this.connection.transaction.add_data(`${line}\r\n`)
     }
 
-    this.connection.transaction.end_data();
-    this.connection.transaction.ensure_body();
+    this.connection.transaction.end_data()
+    this.connection.transaction.ensure_body()
 
     this.plugin.hook_data_post(() => {
       done()
-    },
-    this.connection)
+    }, this.connection)
   })
 })

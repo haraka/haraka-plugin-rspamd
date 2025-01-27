@@ -1,4 +1,5 @@
 {
+
   "name": "haraka-plugin-rspamd",
   "version": "1.3.2",
   "description": "Haraka plugin for rspamd",
@@ -38,5 +39,9 @@
   "files": [
     "CHANGELOG.md",
     "config"
-  ]
+  ],
+  "prettier": {
+    "singleQuote": true,
+    "semi": false
+  }
 }

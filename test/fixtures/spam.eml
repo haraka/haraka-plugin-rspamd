@@ -1,0 +1,168 @@
+Return-Path: <ki+bncBCS5DC6D4QLRBSF23G6AMGQE74UZYNY@zaho.123win.dog>
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-436328fcfeesf29271215e9.1
+        for <matt@redacted.net>; Sun, 26 Jan 2025 08:13:53 -0800 (PST)
+ARC-Seal: i=2; a=rsa-sha256; t=1737907971; cv=pass;
+        d=google.com; s=arc-20240605;
+        b=VWihnGBn7J+aaG+uER1UU1NUgaSxihjBbA5WPpSkQ/TvobhfgekG5y2fwsHGRMB9At
+         c9DcrbLao9K1QnwMRU5D+rJOujyFQcNfWabhrW4HUUhJcFGhTFmV0rMyx8fz+QM0c0sj
+         ob3jcAj3BSGk1WkPBraL6+3L+Y0NOJnRx8xNuejSN0lYwFJaLR+JBOnFxoxVRpBkS2WA
+         vK7A+Auc2PwLhya6qYba3XbMTUwHa7YrIyMBJ2tzBIiG57F27Wp5ORcbTLeOtRK12+5s
+         rZxC2ptn7JjrWf+pDPWKQzMj3ItZ6E2/B/jwA81HrkwEDNWLkJAFNYl9Ug0rYvAjuWaw
+         nacQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=list-unsubscribe:list-subscribe:list-archive:list-help:list-post
+         :list-id:mailing-list:precedence:to:subject:message-id:date:from
+         :mime-version:dkim-signature;
+        bh=y5KsxE/KDsY78hvsBUXoS75hnCryj31gk1NrPrKBoJo=;
+        fh=wvdKgIywERlpanRU9k3IdtcKzFPglbCcaQi6ZF9pu3E=;
+        b=Dq2HXSTV5RVXanplx9EU3d/VBN2JpY9pA6FzYjgySE1hEyqTQEtM9esOyJhS3nlLHb
+         s4APIhqiW073W/AJWljhPfkdx70r1leSQ0ewVjMMdtRkDBOC/S6Q3LeOH8p63v/J7eNB
+         X8JBHB5l/21T6ik1zr5j0ul0Opd4BV6BuEF/y/4kZ2Y3+AJD5tagw6pvfe0SCOUG6hsY
+         Q+BD+dO/S5dyaZRYFTsQthkBlLs5Z1cuRL17hgjm1cmcGWsqtzdN5sNkP/unOWPaJk82
+         qVJh7+WEDdFwEybeV2cYf2tbo6jE1z/mT4uJJhls74ICGpljAv4br4LwGcELWx2xj4u0
+         NbLw==;
+        darn=redacted.net
+ARC-Authentication-Results: i=2; mx.google.com;
+       dkim=pass header.i=@zaho.123win.dog header.s=google header.b=Bw8HiAqx;
+       spf=pass (google.com: domain of serviiiice@zaho.123win.dog designates 209.85.220.41 as permitted sender) smtp.mailfrom=serviiiice@zaho.123win.dog;
+       dara=pass header.i=@zaho.123win.dog
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=zaho.123win.dog; s=google; t=1737907971; x=1738512771; darn=redacted.net;
+        h=list-unsubscribe:list-subscribe:list-archive:list-help:list-post
+         :list-id:mailing-list:precedence:x-original-authentication-results
+         :x-original-sender:to:subject:message-id:date:from:mime-version:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=y5KsxE/KDsY78hvsBUXoS75hnCryj31gk1NrPrKBoJo=;
+        b=Y2t16eHPMCDvglhpFZg/3m8vV8B+iZ72h1pnX+yKETgbwgwBSVWUwtTGcdNO/sSMG5
+         3bg8w59zjmgqf6AFjSqkLx37ePSkWvw9nWowaEMt+UpieatoQM1WhbVW7Yw0pH0kGT68
+         6RvdJhmrvfKqmm32+9yfAc432fVrXdlmYBELE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1737907971; x=1738512771;
+        h=list-unsubscribe:list-subscribe:list-archive:list-help:list-post
+         :x-spam-checked-in-group:list-id:mailing-list:precedence
+         :x-original-authentication-results:x-original-sender:to:subject
+         :message-id:date:from:mime-version:x-beenthere:x-beenthere
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=y5KsxE/KDsY78hvsBUXoS75hnCryj31gk1NrPrKBoJo=;
+        b=fKqNxNBXRVvNmeWnhPDzgdkMCFEFshRjut7ZGcNUMs63Jlc8rJ81ytiDj/Gs6RMRnN
+         80PxvWNOq3Y/WCi1hiNNpSNaKzEBjrMiUY8nWuR4ji91o4VACb4b0KkERfDlEDNx9RaF
+         qb2/FGft3STN9uUHqmBZe/RYjaMEDJm/TnSx2pRx9PSv0QvxkraNDCW+4ftRnU5fg79o
+         SsDNcP2h9cf9UgZlKx4JQ5JCP7CuFVW/56NM2QpQAifC4IKdQ8EB7t65Z2Oi+yTcpnhL
+         OsOHswwKgZmT/s9P4nw2+BBRtvvj0/9DslJmIRlNnrmRRruLm3un+Kwa/dfd7epzMGCB
+         4Xww==
+X-Forwarded-Encrypted: i=2; AJvYcCVkA2XtpygNIyISdA8WAMFTXis+wyTGQhFkWhHzs3EQVmlTOiAqBgidVKTgvbTcboE60uOp@redacted.net
+X-Gm-Message-State: AOJu0YyyY6ypsRCWp0Qq6aIi7bfE2YaTEi9v1gGLKU6QA1kyltdqq+jz
+	ZDdB3+SFLrI8UosbjizhVgpDnw8fHwii2hWNmFxzhzEdVt/6nekk6CXkE3RZpBo=
+X-Google-Smtp-Source: AGHT+IGwvjObaU2m1e53rJOCBLYlfeAOeNR4ugFNThASjMMATSMnXFogYiAB8km2K/TjIIAUs2Nwag==
+X-Received: by 2002:a05:6512:124e:b0:540:2549:b5ad with SMTP id 2adb3069b0e04-5439c246d35mr12834661e87.22.1737907561264;
+        Sun, 26 Jan 2025 08:06:01 -0800 (PST)
+X-BeenThere: ki@zaho.123win.dog
+Received: by 2002:a05:651c:221d:b0:300:40ad:298f with SMTP id
+ 38308e7fff4ca-30761c5e064ls1292611fa.0.-pod-prod-02-eu; Sun, 26 Jan 2025
+ 08:05:26 -0800 (PST)
+X-Forwarded-Encrypted: i=2; AJvYcCXVj5B2hbdVer0sFsIPoZTFZEFpqBA8tHVQNBUAWsFsYtfgauPH7PYZlabJkmus2NCyyg==@zaho.123win.dog
+X-Received: by 2002:a05:651c:10a4:b0:302:1fce:392e with SMTP id 38308e7fff4ca-3072cb12ef1mr121302341fa.25.1737907525449;
+        Sun, 26 Jan 2025 08:05:25 -0800 (PST)
+X-BeenThere: stechniquueeee@zaho.123win.dog
+Received: by 2002:a2e:a54f:0:b0:304:588a:99d3 with SMTP id 38308e7fff4ca-30761d773adls1695671fa.1.-pod-prod-02-eu;
+ Sun, 26 Jan 2025 08:05:23 -0800 (PST)
+X-Received: by 2002:a05:6512:4849:b0:542:29b6:9c1a with SMTP id 2adb3069b0e04-5439c2877c7mr10950326e87.51.1737907523029;
+        Sun, 26 Jan 2025 08:05:23 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1737907523; cv=none;
+        d=google.com; s=arc-20240605;
+        b=JqtjbfDp7ci2XldkrwwU3Hk4W+LvWQ+VWj4lpJWiqbhQZVq5o7qHqyoYwsMmk9vmuW
+         3tIzC/WNOH2fro/HH2aCLcy8Ba6/h+1QoluyTmgVR+TxNmK1skfONda8gFu5/NwU9xxu
+         Knbw15tbiiJ26YZRNoIWPAzPdyNrdVBQGzloPBLt4IpgOM85pjKLnLnM/UJ6D5lcf7c7
+         PRZFchSNTOq4gYuSY9jYrP07eIZXzVZPPMFTInvK/VZgqQopLDz8xzAqR9rOSHNMDPn1
+         ehlcqceYhmUWJCQnUAs9JMXj1hK+g6PdzHOpnnWX93TJXodpdp6Go8k11Aa7ekMc/CBi
+         O+bQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=y5KsxE/KDsY78hvsBUXoS75hnCryj31gk1NrPrKBoJo=;
+        fh=+DjsBAu3vMy32nUDMWtUNFAWWFItuDlhjOwOdXOg8cg=;
+        b=KCiT7ZRBm3UTCeM5an+cWVXyNwRMPfgFLLDjcY++zcSWlzd3LCCHnNFCnsmRy0uTPS
+         dVpPQ3++6piWa1dxhOVShXshI6WQTC+ycsujG3oct8RslGKpPEx6DwhLPUTwXhNIFDjv
+         gUNKn6yampcYyZI5tOyWHCAZ9viXvGTkUeaYaG94uZzlz1t3QQYGCleaHydHIhtK/EXL
+         eBsP255RFgIB4boFypZh20zp0/PAu55BObKp8VlfsNEMWgU5QS62HDRAikdVlvALVHTL
+         A2oD3nj7bYXS5IdXpX316sijqm0+p8hFZdRH4N+eqT5bcrw9d0JhnOj9PWntHTjeYmGk
+         XMAg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@zaho.123win.dog header.s=google header.b=Bw8HiAqx;
+       spf=pass (google.com: domain of serviiiice@zaho.123win.dog designates 209.85.220.41 as permitted sender) smtp.mailfrom=serviiiice@zaho.123win.dog;
+       dara=pass header.i=@zaho.123win.dog
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id 38308e7fff4ca-3076ba4f00esor10968021fa.1.2025.01.26.08.05.22
+        for <stechniquueeee@zaho.123win.dog>
+        (Google Transport Security);
+        Sun, 26 Jan 2025 08:05:22 -0800 (PST)
+Received-SPF: pass (google.com: domain of serviiiice@zaho.123win.dog designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+X-Gm-Gg: ASbGncshXES2dk01NITjT1Q1CAAJ0neEGe1FAVip8W+N4G0QAQ0vurfCDRuf82O5jri
+	fylcxg+qBW34hzAU2N4iMRrYdDsrwEaptz6kM2VkyLgC12QtQux5Pic3DnLF4sQ==
+X-Received: by 2002:a2e:b555:0:b0:302:22e6:5f8 with SMTP id
+ 38308e7fff4ca-3072ca9a6f7mr108778841fa.22.1737907522169; Sun, 26 Jan 2025
+ 08:05:22 -0800 (PST)
+MIME-Version: 1.0
+From: Repair your teeth <serviiiice@zaho.123win.dog>
+Date: Sun, 26 Jan 2025 08:05:11 -0800
+X-Gm-Features: AWEUYZlRnFchucj3BSMH8GD7_jPNFGYW316YoHEeaVYWa1CCCoQQbmKjGhnSd5M
+Message-ID: <CAJBCmuKNq1nEPH-h8BhEBTusVOmr504M4kiHjnW+98PMikUDaA@mail.gmail.com>
+Subject: Swish This Sour Liquid In Your Mouth To Regrow Teeth And Gums Overnight
+To: stechniquueeee@zaho.123win.dog
+Content-Type: multipart/alternative; boundary="000000000000830b18062c9e2007"
+X-Original-Sender: serviiiice@zaho.123win.dog
+X-Original-Authentication-Results: mx.google.com;       dkim=pass
+ header.i=@zaho.123win.dog header.s=google header.b=Bw8HiAqx;       spf=pass
+ (google.com: domain of serviiiice@zaho.123win.dog designates 209.85.220.41 as
+ permitted sender) smtp.mailfrom=serviiiice@zaho.123win.dog;       dara=pass header.i=@zaho.123win.dog
+Precedence: list
+Mailing-list: list ki@zaho.123win.dog; contact ki+owners@zaho.123win.dog
+List-ID: <ki.zaho.123win.dog>
+X-Spam-Checked-In-Group: stechniquueeee@zaho.123win.dog
+X-Google-Group-Id: 120555917144
+List-Post: <https://groups.google.com/a/zaho.123win.dog/group/ki/post>, <mailto:ki@zaho.123win.dog>
+List-Help: <https://support.google.com/a/zaho.123win.dog/bin/topic.py?topic=25838>,
+ <mailto:ki+help@zaho.123win.dog>
+List-Archive: <https://groups.google.com/a/zaho.123win.dog/group/ki/>
+List-Subscribe: <https://groups.google.com/a/zaho.123win.dog/group/stechniquueeee/subscribe>,
+ <mailto:stechniquueeee+subscribe@zaho.123win.dog>
+List-Unsubscribe: <mailto:googlegroups-manage+120555917144+unsubscribe@googlegroups.com>,
+ <https://groups.google.com/a/zaho.123win.dog/group/ki/subscribe>
+
+--000000000000830b18062c9e2007
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Do you touch your gums like this with your tongue?
+
+STOP RIGHT NOW or risk losing all your teeth!
+
+Recent studies have shown that people who touch their gums with their
+tongue this way have 90% more rotten teeth compared to those who don=E2=80=
+=99t.
+
+*Click here <https://www.123win.dog/sheyyeteesssss>* to find why this habit
+might cause all your teeth to fall out and what you can do about it.
+
+<https://www.123win.dog/sheyyeteesssss>
+
+--000000000000830b18062c9e2007
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Do you touch your gums like this with your tongue?<br><br>=
+STOP RIGHT NOW or risk losing all your teeth!<br><br>Recent studies have sh=
+own that people who touch their gums with their tongue this way have 90% mo=
+re rotten teeth compared to those who don=E2=80=99t.<br><br><font size=3D"4=
+"><b><a href=3D"https://www.123win.dog/sheyyeteesssss">Click here</a></b></=
+font> to find why this habit might cause all your teeth to fall out and wha=
+t you can do about it.<div><p><a target=3D"_blank" rel=3D"noopener noreferr=
+er" href=3D"https://www.123win.dog/sheyyeteesssss"><img src=3D"https://lh4.=
+googleusercontent.com/3U88vxkQyndR_SnjWIPpNoEsDIxKfawhBlg2fb_9IxyNpsLzEMfVY=
+NXCua2DaIOwJFQS3Fw747R66J-raUhB1dlPdshklBBi9bBcavO15ptUrO7NVIL5DmoP8XZ0ECjm=
+jPr3QQ9NzNQ=3Dw500" width=3D"500" height=3D"375"></a></p><br></div><div><br=
+></div><div><br></div><div><br></div><div><br></div><div><br></div><div><br=
+></div><div><br></div></div>
+
+--000000000000830b18062c9e2007--
+

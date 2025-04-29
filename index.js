@@ -109,7 +109,10 @@ exports.get_options = function (connection) {
   }
 
   if (connection.transaction.mail_from) {
-    const mfaddr = connection.transaction.mail_from.address().toString()
+    let mfaddr = connection.transaction.mail_from.address().toString()
+
+    mfaddr = mfaddr.replace(/\uFFFD/g, '') // Replace wrong bytes (�)
+
     if (mfaddr) {
       options.headers.From = mfaddr
     }

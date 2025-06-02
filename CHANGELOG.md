@@ -8,16 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 #### Added
 
-- 
+-
 
 #### Fixed
 
-- 
+-
 
 #### Changed
 
-- 
-
+-
 
 ### [1.3.2] - 2025-01-26
 

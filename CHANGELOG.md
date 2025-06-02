@@ -4,6 +4,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.3.3] - 2025-06-02
+
+#### Added
+
+- 
+
+#### Fixed
+
+- 
+
+#### Changed
+
+- 
+
+
 ### [1.3.2] - 2025-01-26
 
 - prefix node built-in modules with node:
@@ -81,3 +96,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.3.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.1
 [1.3.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.2
 [1.1.6]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.1.6
+[1.3.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.3

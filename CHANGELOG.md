@@ -8,19 +8,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 #### Added
 
-- 
+-
 
 #### Fixed
 
-- 
+-
 
 #### Changed
 
-- 
+-
 - doc(CONTRIBUTORS): updated
 
 - fix: strip invalid bytes from MAIL FROM address (#40)
-
 
 ### [1.3.2] - 2025-01-26
 

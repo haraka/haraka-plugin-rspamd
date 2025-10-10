@@ -4,6 +4,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.4.0] - 2025-10-10
+
+- sanitize helo host & mfrom email address (#43)
+  - Sanitize helo host, allow only ASCII, utf8 encode to punycode
+  - User email addr: sanitize, encode to utf8 mime if possible
+- deps: bump versions to latest
+
 ### [1.3.3] - 2025-06-02
 
 - fix: strip invalid bytes from MAIL FROM address (#40)
@@ -86,3 +93,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.3.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.2
 [1.1.6]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.1.6
 [1.3.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.3
+[1.3.4]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.4

@@ -6,6 +6,10 @@ const http = require('node:http')
 // haraka libs
 const DSN = require('haraka-dsn')
 
+// mime libs
+const libmime = require('libmime')
+const punycode = require('punycode.js')
+
 exports.register = function () {
   this.load_rspamd_ini()
 }
@@ -34,7 +38,7 @@ exports.load_rspamd_ini = function () {
     },
     () => {
       plugin.load_rspamd_ini()
-    },
+    }
   )
 
   if (!this.cfg.reject.message) {
@@ -96,7 +100,29 @@ exports.get_options = function (connection) {
     }
   }
 
-  if (connection.hello.host) options.headers.Helo = connection.hello.host
+  if (connection.hello.host) {
+    let helo = connection.hello.host
+
+    const buffer = Buffer.from(helo, 'utf8')
+    helo = buffer
+      .toString('utf8')
+      .replace(/\uFFFD/g, '')
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x1F\x7F]/g, '')
+      .trim()
+
+    try {
+      helo = punycode.toASCII(helo)
+    } catch {
+      helo = Buffer.from(helo, 'utf-8')
+        .toString('ascii')
+        .replace(/[^\x20-\x7E]/g, '') // allow only ascii
+    }
+
+    if (helo) {
+      options.headers.Helo = helo
+    }
+  }
 
   let spf = connection.transaction.results.get('spf')
   if (spf && spf.result) {
@@ -111,7 +137,20 @@ exports.get_options = function (connection) {
   if (connection.transaction.mail_from) {
     let mfaddr = connection.transaction.mail_from.address().toString()
 
-    mfaddr = mfaddr.replace(/\uFFFD/g, '') // Replace wrong bytes (�)
+    const buffer = Buffer.from(mfaddr, 'utf8')
+    mfaddr = buffer
+      .toString('utf8')
+      .replace(/\uFFFD/g, '')
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x1F\x7F]/g, '')
+      .trim()
+
+    try {
+      // encode to utf-8 mime string that is pure ASCII
+      mfaddr = libmime.encodeWord(mfaddr)
+    } catch {
+      //
+    }
 
     if (mfaddr) {
       options.headers.From = mfaddr
@@ -183,14 +222,14 @@ exports.do_milter_headers = function (connection, data) {
     try {
       connection.logdebug(
         this,
-        `milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`,
+        `milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`
       )
       for (const key of Object.keys(data.milter.add_headers)) {
         const header_values = data.milter.add_headers[key]
         if (!header_values) continue
 
         if (Object.prototype.toString.call(header_values) == '[object Array]') {
-          header_values.forEach(function (header_value, header_index) {
+          header_values.forEach(function (header_value) {
             if (typeof header_value === 'object') {
               connection.transaction.add_header(key, header_value.value)
             } else {
@@ -270,8 +309,8 @@ exports.hook_data_post = function (next, connection) {
           DENYSOFT,
           DSN.sec_unauthorized(
             smtp_message || plugin.cfg.soft_reject.message,
-            451,
-          ),
+            451
+          )
         )
       } else if (plugin.wants_reject(connection, r.data)) {
         nextOnce(DENY, smtp_message || plugin.cfg.reject.message)
@@ -460,7 +499,7 @@ exports.add_headers = function (connection, data) {
     connection.transaction.remove_header(cfg.header.report)
     connection.transaction.add_header(
       cfg.header.report,
-      prettySymbols.join(' '),
+      prettySymbols.join(' ')
     )
   }
 

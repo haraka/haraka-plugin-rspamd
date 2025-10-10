@@ -1,6 +1,6 @@
 {
   "name": "haraka-plugin-rspamd",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "description": "Haraka plugin for rspamd",
   "main": "index.js",
   "scripts": {
@@ -29,8 +29,8 @@
   },
   "homepage": "https://github.com/haraka/haraka-plugin-rspamd#readme",
   "devDependencies": {
-    "@haraka/eslint-config": "^2.0.2",
-    "haraka-test-fixtures": "^1.3.8"
+    "@haraka/eslint-config": "^2.0.3",
+    "haraka-test-fixtures": "^1.3.10"
   },
   "dependencies": {
     "haraka-dsn": "^1.1.0",

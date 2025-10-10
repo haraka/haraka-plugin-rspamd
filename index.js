@@ -38,7 +38,7 @@ exports.load_rspamd_ini = function () {
     },
     () => {
       plugin.load_rspamd_ini()
-    }
+    },
   )
 
   if (!this.cfg.reject.message) {
@@ -222,7 +222,7 @@ exports.do_milter_headers = function (connection, data) {
     try {
       connection.logdebug(
         this,
-        `milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`
+        `milter.add_headers: ${JSON.stringify(data.milter.add_headers)}`,
       )
       for (const key of Object.keys(data.milter.add_headers)) {
         const header_values = data.milter.add_headers[key]
@@ -309,8 +309,8 @@ exports.hook_data_post = function (next, connection) {
           DENYSOFT,
           DSN.sec_unauthorized(
             smtp_message || plugin.cfg.soft_reject.message,
-            451
-          )
+            451,
+          ),
         )
       } else if (plugin.wants_reject(connection, r.data)) {
         nextOnce(DENY, smtp_message || plugin.cfg.reject.message)
@@ -499,7 +499,7 @@ exports.add_headers = function (connection, data) {
     connection.transaction.remove_header(cfg.header.report)
     connection.transaction.add_header(
       cfg.header.report,
-      prettySymbols.join(' ')
+      prettySymbols.join(' '),
     )
   }
 

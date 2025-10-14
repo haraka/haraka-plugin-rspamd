@@ -34,8 +34,7 @@
   },
   "dependencies": {
     "haraka-dsn": "^1.1.0",
-    "libmime": "^5.3.7",
-    "punycode.js": "^2.3.1"
+    "libmime": "^5.3.7"
   },
   "files": [
     "CHANGELOG.md",

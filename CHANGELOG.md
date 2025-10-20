@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.4.1] - 2025-10-20
+
+- convert mfaddr to utf8 mime string, #45
+
 ### [1.4.0] - 2025-10-10
 
 - sanitize helo host & mfrom email address (#43)
@@ -87,10 +91,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 [1.1.8]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.8
 [1.1.9]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.1.9
-[1.2.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.2.0
-[1.3.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.0
-[1.3.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/1.3.1
+[1.2.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.2.0
+[1.3.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.0
+[1.3.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.1
 [1.3.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.2
 [1.1.6]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.1.6
 [1.3.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.3
 [1.3.4]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.4
+[1.4.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.1
+[1.4.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.0

@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/haraka/haraka-plugin-rspamd#readme",
   "devDependencies": {
-    "@haraka/eslint-config": "^2.0.2",
+    "@haraka/eslint-config": "^2.0.3",
     "haraka-test-fixtures": "^1.3.10"
   },
   "dependencies": {

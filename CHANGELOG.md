@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.4.2] - 2025-11-17
+
+- revert #45, #43, #40
+
 ### [1.4.1] - 2025-10-20
 
 - convert mfaddr to utf8 mime string, #45
@@ -100,3 +104,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.3.4]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.3.4
 [1.4.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.1
 [1.4.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.0
+[1.4.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.2

@@ -25,6 +25,19 @@ rspamd.ini
 
   Path to a unix socket to connect to. If set, overrides host and port.
 
+- scheme
+
+  Default: http
+
+  Transport for network connections (`http` or `https`). Ignored when
+  `unix_socket` is set.
+
+- path
+
+  Default: /checkv2
+
+  HTTP path for rspamd checks.
+
 - add_headers
 
   Default: sometimes
@@ -36,6 +49,89 @@ rspamd.ini
         "sometimes" - add headers when rspamd recommends `add header` action
 
   Format of these headers is governed by header.\* settings
+
+- tls.reject_unauthorized
+
+  Default: true
+
+  TLS certificate verification setting for HTTPS upstream requests.
+
+- tls.servername
+
+  Default: undefined
+
+  Optional TLS SNI override when connecting via HTTPS.
+
+- tls.ca_file / tls.cert_file / tls.key_file
+
+  Default: undefined
+
+  Optional PEM files for CA trust, client certificate, and client key when
+  using HTTPS.
+
+- auth.basic_user / auth.basic_pass
+
+  Default: undefined
+
+  Optional HTTP Basic Auth credentials for protected rspamd endpoints.
+
+- auth.header / auth.value / auth.value_env
+
+  Default: undefined
+
+  Optional custom auth header. `auth.value_env` reads the header value from an
+  environment variable.
+
+- request.settings_id
+
+  Default: undefined
+
+  Sends `Settings-ID` header so rspamd can apply a named profile (for example,
+  an URIBL-focused profile in `settings.conf`).
+
+- request.settings
+
+  Default: undefined
+
+  Sends raw `Settings` header payload for per-request rspamd settings overrides.
+
+- request.flags
+
+  Default: undefined
+
+  Comma-separated `Flags` header value for rspamd protocol options.
+
+- request.body_block / request.ext_urls / request.groups / request.milter /
+  request.no_log / request.profile / request.skip / request.skip_process /
+  request.zstd
+
+  Default: false
+
+  Boolean helpers that append protocol flags to `Flags`.
+
+- request.pass_all
+
+  Default: false
+
+  Sends `Pass: all` to force all rspamd filters for a request.
+
+- request.raw
+
+  Default: false
+
+  Sends `Raw: yes` for non-MIME/raw body scanning.
+
+- request.url_format
+
+  Default: undefined
+
+  Sets rspamd `URL-Format` header (for example, `extended`).
+
+- request_headers.\*
+
+  Default: undefined
+
+  Additional headers to pass to rspamd (for example, `MTA-Tag`).
 
 - reject.message
 

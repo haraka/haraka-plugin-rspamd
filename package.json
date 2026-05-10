@@ -10,7 +10,8 @@
     "prettier": "npx prettier . --check",
     "prettier:fix": "npx prettier . --write --log-level=warn",
     "test": "node --test",
-    "test:coverage": "npx c8 --reporter=text --reporter=text-summary npm test",
+    "test:coverage": "node --test --experimental-test-coverage",
+    "test:coverage:lcov": "mkdir -p coverage && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info",
     "versions": "npx npm-dep-mgr check",
     "versions:fix": "npx npm-dep-mgr update"
   },

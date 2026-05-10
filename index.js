@@ -216,6 +216,10 @@ exports.hook_data_post = function (next, connection) {
 
   let calledNext = false
   function nextOnce(code, msg) {
+    // unpipe() before destroy() — see haraka/message-stream#22.
+    if (connection?.transaction?.message_stream)
+      connection.transaction.message_stream.unpipe()
+    if (req) req.destroy()
     clearTimeout(timer)
     if (calledNext) return
     calledNext = true

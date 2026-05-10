@@ -4,6 +4,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.4.3] - 2026-05-10
+
+- call message_stream.unpipe before next
+- test: add regression tests for pipe failures
+- test: convert runner to `node --test`
+- ci: update meta info
+
 ### [1.4.2] - 2025-11-17
 
 - revert #45, #43, #40
@@ -105,3 +112,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.4.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.1
 [1.4.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.0
 [1.4.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.2
+[1.4.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.3

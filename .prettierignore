@@ -1,3 +1,4 @@
 .release
 .git
 node_modules
+.release/

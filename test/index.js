@@ -130,7 +130,7 @@ describe('parse_response', () => {
 })
 
 describe('should_check', () => {
-  beforeEach((t, done) => {
+  beforeEach(() => {
     this.plugin = new fixtures.plugin('rspamd')
     this.plugin.register()
     this.connection = connection.createConnection()

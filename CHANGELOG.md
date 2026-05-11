@@ -4,6 +4,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.5.0] - 2026-05-10
+
+- feat: add HTTPS support with configurable TLS options
+- feat: move more protocol handing into rspamd.ini
+- feat: expanded protocol-level control over requests
+  - Settings-ID, Settings, Flags, Pass, Raw, URL-Format, etc
+- refactor: reduce complexity, use ES2024 idioms
+- fix(get_clean): preserve messages dictionary, was discarding the join result
+- fix(do_milter_headers):
+  - logerror typo (was errorlog)
+  - move JSON.stringify into try so circular references don't crash
+
 ### [1.4.3] - 2026-05-10
 
 - call message_stream.unpipe before next
@@ -113,3 +125,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.4.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.0
 [1.4.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.2
 [1.4.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.3
+[1.5.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.5.0

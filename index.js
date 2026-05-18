@@ -193,12 +193,12 @@ function set_spf(options, connection) {
 
 function set_envelope(options, connection) {
   const txn = connection.transaction
-  const from = txn.mail_from?.address()?.toString()
+  const from = txn.mail_from?.address?.toString()
   if (from) options.headers.From = from
 
   const rcpts = txn.rcpt_to
   if (rcpts?.length) {
-    options.headers.Rcpt = rcpts.map((r) => r.address())
+    options.headers.Rcpt = rcpts.map((r) => r.address)
     // for per-user options
     if (rcpts.length === 1)
       options.headers['Deliver-To'] = options.headers.Rcpt[0]

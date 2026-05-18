@@ -9,7 +9,7 @@ const path = require('node:path')
 const { PassThrough } = require('node:stream')
 const { afterEach, beforeEach, describe, it } = require('node:test')
 
-const Address = require('address-rfc2821')
+const Address = require('@haraka/email-address')
 const fixtures = require('haraka-test-fixtures')
 const connection = fixtures.connection
 

@@ -4,6 +4,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+### [1.6.0] - 2026-05-17
+
+
 ### [1.5.0] - 2026-05-10
 
 - feat: add HTTPS support with configurable TLS options
@@ -126,3 +129,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.4.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.2
 [1.4.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.3
 [1.5.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.5.0
+[1.6.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.0

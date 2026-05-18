@@ -9,7 +9,7 @@ const path = require('node:path')
 const { PassThrough } = require('node:stream')
 const { afterEach, beforeEach, describe, it } = require('node:test')
 
-const Address = require('@haraka/email-address')
+const { Address } = require('@haraka/email-address')
 const fixtures = require('haraka-test-fixtures')
 const connection = fixtures.connection
 
@@ -262,8 +262,8 @@ describe('rspamd request cleanup', () => {
     this.connection = connection.createConnection()
     this.connection.init_transaction()
     const txn = this.connection.transaction
-    txn.mail_from = new Address.Address('<m@example.com>')
-    txn.rcpt_to = [new Address.Address('<r@example.com>')]
+    txn.mail_from = new Address('<m@example.com>')
+    txn.rcpt_to = [new Address('<r@example.com>')]
     txn.uuid = 'TEST-UUID'
     txn.message_stream.add_line('Header: 1\r\n')
     txn.message_stream.add_line('\r\n')
@@ -404,17 +404,13 @@ describe('get_options', () => {
   })
 
   it('sets From from mail_from', () => {
-    this.connection.transaction.mail_from = new Address.Address(
-      '<sender@example.com>',
-    )
+    this.connection.transaction.mail_from = new Address('<sender@example.com>')
     const opts = this.plugin.get_options(this.connection)
     assert.equal(opts.headers.From, 'sender@example.com')
   })
 
   it('single rcpt gets Rcpt and Deliver-To', () => {
-    this.connection.transaction.rcpt_to = [
-      new Address.Address('<one@example.com>'),
-    ]
+    this.connection.transaction.rcpt_to = [new Address('<one@example.com>')]
     const opts = this.plugin.get_options(this.connection)
     assert.deepEqual(opts.headers.Rcpt, ['one@example.com'])
     assert.equal(opts.headers['Deliver-To'], 'one@example.com')
@@ -422,8 +418,8 @@ describe('get_options', () => {
 
   it('multi rcpt gets Rcpt array only (no Deliver-To)', () => {
     this.connection.transaction.rcpt_to = [
-      new Address.Address('<one@example.com>'),
-      new Address.Address('<two@example.com>'),
+      new Address('<one@example.com>'),
+      new Address('<two@example.com>'),
     ]
     const opts = this.plugin.get_options(this.connection)
     assert.deepEqual(opts.headers.Rcpt, ['one@example.com', 'two@example.com'])
@@ -849,8 +845,8 @@ describe('hook_data_post success paths', () => {
     this.connection = connection.createConnection()
     this.connection.init_transaction()
     const txn = this.connection.transaction
-    txn.mail_from = new Address.Address('<m@example.com>')
-    txn.rcpt_to = [new Address.Address('<r@example.com>')]
+    txn.mail_from = new Address('<m@example.com>')
+    txn.rcpt_to = [new Address('<r@example.com>')]
     txn.uuid = 'TEST-UUID'
     txn.message_stream.add_line('Header: 1\r\n')
     txn.message_stream.add_line('\r\n')

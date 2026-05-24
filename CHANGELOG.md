@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### [1.6.0] - 2026-05-17
 
 - changed: address-rfc2821 -> @haraka/email-message
+- deps: bump all to latest
 
 ### [1.5.0] - 2026-05-10
 

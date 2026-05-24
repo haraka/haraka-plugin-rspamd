@@ -32,11 +32,11 @@
   "homepage": "https://github.com/haraka/haraka-plugin-rspamd#readme",
   "devDependencies": {
     "@haraka/eslint-config": "^2.0.4",
-    "@haraka/email-address": "^3.1.2",
-    "haraka-test-fixtures": "^1.4.3"
+    "@haraka/email-address": "^3.1.4",
+    "haraka-test-fixtures": "^1.6.0"
   },
   "dependencies": {
-    "haraka-dsn": "^1.1.0"
+    "haraka-dsn": "^1.2.0"
   },
   "files": [
     "CHANGELOG.md",

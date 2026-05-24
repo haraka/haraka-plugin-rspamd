@@ -1,6 +1,6 @@
 {
   "name": "haraka-plugin-rspamd",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Haraka plugin for rspamd",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "prettier": "npx prettier . --check",
     "prettier:fix": "npx prettier . --write --log-level=warn",
     "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-exclude=package.json --test-coverage-exclude=test/*.js",
     "test:coverage:lcov": "mkdir -p coverage && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info",
     "versions": "npx npm-dep-mgr check",
     "versions:fix": "npx npm-dep-mgr update"
@@ -32,11 +32,11 @@
   "homepage": "https://github.com/haraka/haraka-plugin-rspamd#readme",
   "devDependencies": {
     "@haraka/eslint-config": "^2.0.4",
-    "address-rfc2821": "^2.1.5",
-    "haraka-test-fixtures": "^1.4.3"
+    "@haraka/email-address": "^3.1.4",
+    "haraka-test-fixtures": "^1.6.0"
   },
   "dependencies": {
-    "haraka-dsn": "^1.1.0"
+    "haraka-dsn": "^1.2.0"
   },
   "files": [
     "CHANGELOG.md",

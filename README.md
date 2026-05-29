@@ -1,7 +1,6 @@
-[![Build Status][ci-img]][ci-url]
-[![Code Climate][clim-img]][clim-url]
-
 # haraka-plugin-rspamd
+
+[![Test][ci-img]][ci-url] [![Cover][cov-img]][cov-url] [![Qlty][qlty-img]][qlty-url]
 
 This plugin facilitates scanning messages with Rspamd.
 
@@ -269,5 +268,5 @@ rspamd.ini
 [ci-url]: https://github.com/haraka/haraka-plugin-rspamd/actions/workflows/ci.yml
 [cov-img]: https://codecov.io/github/haraka/haraka-plugin-rspamd/coverage.svg
 [cov-url]: https://codecov.io/github/haraka/haraka-plugin-rspamd
-[clim-img]: https://codeclimate.com/github/haraka/haraka-plugin-rspamd/badges/gpa.svg
-[clim-url]: https://codeclimate.com/github/haraka/haraka-plugin-rspamd
+[qlty-img]: https://qlty.sh/gh/haraka/projects/haraka-plugin-rspamd/maintainability.svg
+[qlty-url]: https://qlty.sh/gh/haraka/projects/haraka-plugin-rspamd

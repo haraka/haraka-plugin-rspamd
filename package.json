@@ -4,11 +4,13 @@
   "description": "Haraka plugin for rspamd",
   "main": "index.js",
   "scripts": {
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "format": "npm run prettier:fix && npm run lint:fix",
     "lint": "npx eslint *.js test",
     "lint:fix": "npx eslint --fix *.js test",
     "prettier": "npx prettier . --check",
     "prettier:fix": "npx prettier . --write --log-level=warn",
+    "qlty": "qlty smells --all",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-exclude=package.json --test-coverage-exclude=test/*.js",
     "test:coverage:lcov": "mkdir -p coverage && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info",
@@ -33,7 +35,7 @@
   "devDependencies": {
     "@haraka/eslint-config": "^2.0.4",
     "@haraka/email-address": "^3.1.4",
-    "haraka-test-fixtures": "^1.6.0"
+    "haraka-test-fixtures": "^1.7.0"
   },
   "dependencies": {
     "haraka-dsn": "^1.2.0"

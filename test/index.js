@@ -10,14 +10,11 @@ const { PassThrough } = require('node:stream')
 const { afterEach, beforeEach, describe, it } = require('node:test')
 
 const { Address } = require('@haraka/email-address')
-const fixtures = require('haraka-test-fixtures')
-const connection = fixtures.connection
+const { makeConnection, makePlugin } = require('haraka-test-fixtures')
 
 const _set_up = (t, done) => {
-  this.plugin = new fixtures.plugin('rspamd')
-  this.plugin.register()
-  this.connection = connection.createConnection()
-  this.connection.init_transaction()
+  this.plugin = makePlugin('rspamd')
+  this.connection = makeConnection({ withTxn: true })
   done()
 }
 
@@ -134,9 +131,9 @@ describe('parse_response', () => {
 
 describe('should_check', () => {
   beforeEach(() => {
-    this.plugin = new fixtures.plugin('rspamd')
+    this.plugin = makePlugin('rspamd', { register: false })
     this.plugin.register()
-    this.connection = connection.createConnection()
+    this.connection = makeConnection()
     this.connection.init_transaction()
 
     // init defaults
@@ -257,9 +254,9 @@ describe('rspamd request cleanup', () => {
   let server
 
   beforeEach((t, done) => {
-    this.plugin = new fixtures.plugin('rspamd')
+    this.plugin = makePlugin('rspamd', { register: false })
     this.plugin.register()
-    this.connection = connection.createConnection()
+    this.connection = makeConnection()
     this.connection.init_transaction()
     const txn = this.connection.transaction
     txn.mail_from = new Address('<m@example.com>')
@@ -840,9 +837,9 @@ describe('hook_data_post success paths', () => {
   let server
 
   beforeEach((t, done) => {
-    this.plugin = new fixtures.plugin('rspamd')
+    this.plugin = makePlugin('rspamd', { register: false })
     this.plugin.register()
-    this.connection = connection.createConnection()
+    this.connection = makeConnection()
     this.connection.init_transaction()
     const txn = this.connection.transaction
     txn.mail_from = new Address('<m@example.com>')

@@ -254,7 +254,7 @@ describe('rspamd request cleanup', () => {
   let server
 
   beforeEach((t, done) => {
-    this.plugin = makePlugin('rspamd', { register: false })
+    this.plugin = makePlugin('rspamd')
     this.connection = makeConnection({
       mailFrom: 'm@example.com',
       rcptTo: ['r@example.com'],
@@ -836,7 +836,7 @@ describe('hook_data_post success paths', () => {
   let server
 
   beforeEach((t, done) => {
-    this.plugin = makePlugin('rspamd', { register: false })
+    this.plugin = makePlugin('rspamd')
     this.connection = makeConnection({
       mailFrom: 'm@example.com',
       rcptTo: ['r@example.com'],

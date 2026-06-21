@@ -4,22 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
-### [1.7.0] - 2026-06-20
+### [1.6.1] - 2026-06-20
 
-#### Changed
-
-- refactored against test-fixtures 1.7.0 (#56)
-
-#### Other
-
-- deps(test-fixtures): update to 1.7.0 syntax (#57)
-
-
-- deps(test-fixtures): update to 1.7.0 syntax
-- refactor: rename `hook_data_post` to `rspamd_data_post`, registered
-  explicitly, and split the response handling into reusable `handle_rspamd`
-  (annotate + reject decision + headers). Lets another plugin reuse rspamd's
-  results handling via `inherits()`. No behavior change for direct scans.
+- deps(test-fixtures): update to 1.7.0 syntax (#56, #57)
+- refactor: rename `hook_data_post` to `rspamd_data_post`,
+  - related to haraka/Haraka#3604
 
 ### [1.6.0] - 2026-05-17
 
@@ -149,4 +138,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.4.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.3
 [1.5.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.5.0
 [1.6.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.0
-[1.7.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.7.0
+[1.6.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.1

@@ -10,6 +10,10 @@ const DSN = require('haraka-dsn')
 
 exports.register = function () {
   this.load_rspamd_ini()
+  // explicit hook (not magic hook_data_post) so the plugin can be inherited;
+  // don't rename. guarded so inheritors don't re-register. haraka/Haraka#3604
+  if (this.name === 'rspamd')
+    this.register_hook('data_post', 'rspamd_data_post')
 }
 
 const INI_BOOLEANS = [
@@ -283,7 +287,7 @@ exports.get_request_client = function (options) {
   return options.protocol === 'https:' ? https : http
 }
 
-exports.hook_data_post = function (next, connection) {
+exports.rspamd_data_post = function (next, connection) {
   const plugin = this
   if (!connection.transaction) return next()
   if (!plugin.should_check(connection)) return next()
@@ -352,21 +356,30 @@ function on_response(plugin, connection, ctx, rawData, start) {
     return ctx.nextOnce()
   }
 
+  const action = plugin.handle_rspamd(connection, r, start)
+  ctx.nextOnce(...(action || []))
+}
+
+// handle a parsed response (annotate + decide action). I/O-free so inheriting
+// plugins can reuse it; returns next() args ([] = CONT). haraka/Haraka#3604
+exports.handle_rspamd = function (connection, r, start) {
+  if (!connection.transaction) return []
+
   r.log.emit = true // spit out a log entry
-  r.log.time = (Date.now() - start) / 1000
-  connection.transaction.results.add(plugin, r.log)
+  if (start !== undefined) r.log.time = (Date.now() - start) / 1000
+  connection.transaction.results.add(this, r.log)
   if (r.data.symbols)
-    connection.transaction.results.add(plugin, { symbols: r.data.symbols })
+    connection.transaction.results.add(this, { symbols: r.data.symbols })
 
-  plugin.do_rewrite(connection, r.data)
+  this.do_rewrite(connection, r.data)
 
-  const action = plugin.decide_action(connection, r)
-  if (action) return ctx.nextOnce(...action)
+  const action = this.decide_action(connection, r)
+  if (action) return action
 
-  plugin.add_dkim_header(connection, r.data)
-  plugin.do_milter_headers(connection, r.data)
-  plugin.add_headers(connection, r.data)
-  ctx.nextOnce()
+  this.add_dkim_header(connection, r.data)
+  this.do_milter_headers(connection, r.data)
+  this.add_headers(connection, r.data)
+  return []
 }
 
 exports.decide_action = function (connection, r) {

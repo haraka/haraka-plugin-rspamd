@@ -243,7 +243,7 @@ describe.skip('data_post', () => {
     this.connection.transaction.end_data()
     this.connection.transaction.ensure_body()
 
-    this.plugin.hook_data_post(() => {
+    this.plugin.rspamd_data_post(() => {
       done()
     }, this.connection)
   })
@@ -280,7 +280,7 @@ describe('rspamd request cleanup', () => {
       this.plugin.cfg.main.host = '127.0.0.1'
       this.plugin.cfg.main.port = server.address().port
 
-      this.plugin.hook_data_post(() => {
+      this.plugin.rspamd_data_post(() => {
         const dest = new PassThrough()
         dest.resume()
         assert.doesNotThrow(
@@ -302,7 +302,7 @@ describe('rspamd request cleanup', () => {
       this.plugin.cfg.main.port = server.address().port
       this.plugin.cfg.main.timeout = 1 // 1s
 
-      this.plugin.hook_data_post(() => {
+      this.plugin.rspamd_data_post(() => {
         const dest = new PassThrough()
         dest.resume()
         assert.doesNotThrow(
@@ -832,7 +832,7 @@ describe('get_clean', () => {
   })
 })
 
-describe('hook_data_post success paths', () => {
+describe('rspamd_data_post success paths', () => {
   let server
 
   beforeEach((t, done) => {
@@ -873,7 +873,7 @@ describe('hook_data_post success paths', () => {
 
   it('action=soft reject → DENYSOFT', (t, done) => {
     startStub({ action: 'soft reject', score: 5, required_score: 10 }, () => {
-      this.plugin.hook_data_post((code) => {
+      this.plugin.rspamd_data_post((code) => {
         assert.equal(code, DENYSOFT)
         done()
       }, this.connection)
@@ -882,7 +882,7 @@ describe('hook_data_post success paths', () => {
 
   it('action=reject → DENY (anon, reject.spam=true)', (t, done) => {
     startStub({ action: 'reject', score: 99, required_score: 10 }, () => {
-      this.plugin.hook_data_post((code) => {
+      this.plugin.rspamd_data_post((code) => {
         assert.equal(code, DENY)
         done()
       }, this.connection)
@@ -894,7 +894,7 @@ describe('hook_data_post success paths', () => {
       { action: 'add header', score: 5, required_score: 10, symbols: {} },
       () => {
         this.plugin.cfg.main.add_headers = 'sometimes'
-        this.plugin.hook_data_post((code) => {
+        this.plugin.rspamd_data_post((code) => {
           assert.equal(code, undefined)
           assert.deepEqual(
             this.connection.transaction.header.headers['x-rspamd-score'],
@@ -908,7 +908,7 @@ describe('hook_data_post success paths', () => {
 
   it('empty {} response → CONT', (t, done) => {
     startStub({}, () => {
-      this.plugin.hook_data_post((code) => {
+      this.plugin.rspamd_data_post((code) => {
         assert.equal(code, undefined)
         done()
       }, this.connection)
@@ -918,7 +918,7 @@ describe('hook_data_post success paths', () => {
   it('bad JSON + defer.error=true → DENYSOFT', (t, done) => {
     startStub('not json at all', () => {
       this.plugin.cfg.defer.error = true
-      this.plugin.hook_data_post((code) => {
+      this.plugin.rspamd_data_post((code) => {
         assert.equal(code, DENYSOFT)
         done()
       }, this.connection)
@@ -928,7 +928,7 @@ describe('hook_data_post success paths', () => {
   it('bad JSON + defer.error=false → CONT', (t, done) => {
     startStub('not json at all', () => {
       this.plugin.cfg.defer.error = false
-      this.plugin.hook_data_post((code) => {
+      this.plugin.rspamd_data_post((code) => {
         assert.equal(code, undefined)
         done()
       }, this.connection)

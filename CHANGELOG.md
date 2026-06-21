@@ -4,7 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
-- deps(test-fixtures): update to 1.7.0 syntax
+### [1.6.1] - 2026-06-20
+
+- deps(test-fixtures): update to 1.7.0 syntax (#56, #57)
+- refactor: rename `hook_data_post` to `rspamd_data_post`,
+  - related to haraka/Haraka#3604
 
 ### [1.6.0] - 2026-05-17
 
@@ -134,3 +138,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.4.3]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.4.3
 [1.5.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.5.0
 [1.6.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.0
+[1.6.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.1

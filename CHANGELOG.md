@@ -4,7 +4,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
-- test: refactored against test-fixtures 1.7.0
+- deps(test-fixtures): update to 1.7.0 syntax
 
 ### [1.6.0] - 2026-05-17
 

@@ -254,13 +254,12 @@ describe('rspamd request cleanup', () => {
   let server
 
   beforeEach((t, done) => {
-    this.plugin = makePlugin('rspamd', { register: false })
-    this.plugin.register()
-    this.connection = makeConnection()
-    this.connection.init_transaction()
+    this.plugin = fixtures.makePlugin('rspamd')
+    this.connection = fixtures.makeConnection({
+      mailFrom: 'm@example.com',
+      rcptTo: ['r@example.com'],
+    })
     const txn = this.connection.transaction
-    txn.mail_from = new Address('<m@example.com>')
-    txn.rcpt_to = [new Address('<r@example.com>')]
     txn.uuid = 'TEST-UUID'
     txn.message_stream.add_line('Header: 1\r\n')
     txn.message_stream.add_line('\r\n')
@@ -837,13 +836,12 @@ describe('hook_data_post success paths', () => {
   let server
 
   beforeEach((t, done) => {
-    this.plugin = makePlugin('rspamd', { register: false })
-    this.plugin.register()
-    this.connection = makeConnection()
-    this.connection.init_transaction()
+    this.plugin = fixtures.makePlugin('rspamd')
+    this.connection = fixtures.makeConnection({
+      mailFrom: 'm@example.com',
+      rcptTo: ['r@example.com'],
+    })
     const txn = this.connection.transaction
-    txn.mail_from = new Address('<m@example.com>')
-    txn.rcpt_to = [new Address('<r@example.com>')]
     txn.uuid = 'TEST-UUID'
     txn.message_stream.add_line('Header: 1\r\n')
     txn.message_stream.add_line('\r\n')

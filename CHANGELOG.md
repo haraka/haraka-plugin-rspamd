@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+- fix(set_envelope): tolerate both Address APIs; on Haraka <= 3.1.7
+  (address-rfc2821, .address is a method) the property read leaked function
+  source into From/Rcpt, crashing the scan on Node >= 20 (ERR_INVALID_CHAR)
+  and raising BROKEN_HEADERS in rspamd on every message
+
 ### [1.6.1] - 2026-06-20
 
 - deps(test-fixtures): update to 1.7.0 syntax (#56, #57)

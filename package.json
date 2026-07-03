@@ -35,6 +35,7 @@
   "devDependencies": {
     "@haraka/email-address": "^3.1.6",
     "@haraka/eslint-config": "^3.0.0",
+    "address-rfc2821": "^2.2.1",
     "haraka-test-fixtures": "^1.7.1"
   },
   "dependencies": {

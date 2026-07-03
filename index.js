@@ -195,14 +195,27 @@ function set_spf(options, connection) {
   if (spf?.result) options.headers.SPF = { result: spf.result.toLowerCase() }
 }
 
+// The Address objects come from the host Haraka: @haraka/email-address
+// (Haraka >= 3.2.0) exposes .address as a string property, address-rfc2821
+// (Haraka <= 3.1.7) as a method. Reading the method as a property leaks the
+// function's source into the From/Rcpt headers: rspamd flags every message
+// BROKEN_HEADERS and Node >= 20 rejects the multiline header value with
+// ERR_INVALID_CHAR, aborting the scan. Tolerate both APIs.
+function get_address(a) {
+  if (a == null) return undefined
+  if (typeof a.address === 'function') return a.address()
+  if (a.address != null) return String(a.address)
+  return typeof a.toString === 'function' ? a.toString() : undefined
+}
+
 function set_envelope(options, connection) {
   const txn = connection.transaction
-  const from = txn.mail_from?.address?.toString()
+  const from = get_address(txn.mail_from)
   if (from) options.headers.From = from
 
   const rcpts = txn.rcpt_to
   if (rcpts?.length) {
-    options.headers.Rcpt = rcpts.map((r) => r.address)
+    options.headers.Rcpt = rcpts.map(get_address)
     // for per-user options
     if (rcpts.length === 1)
       options.headers['Deliver-To'] = options.headers.Rcpt[0]

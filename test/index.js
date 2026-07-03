@@ -10,6 +10,7 @@ const { PassThrough } = require('node:stream')
 const { afterEach, beforeEach, describe, it } = require('node:test')
 
 const { Address } = require('@haraka/email-address')
+const { Address: Rfc2821Address } = require('address-rfc2821')
 const { makeConnection, makePlugin } = require('haraka-test-fixtures')
 
 const _set_up = (t, done) => {
@@ -403,6 +404,21 @@ describe('get_options', () => {
     this.connection.transaction.mail_from = new Address('<sender@example.com>')
     const opts = this.plugin.get_options(this.connection)
     assert.equal(opts.headers.From, 'sender@example.com')
+  })
+
+  it('extracts bare addresses from legacy address-rfc2821 objects', () => {
+    // Haraka <= 3.1.7 passes address-rfc2821 Address objects, where .address
+    // is a method — reading it as a property yields the function itself
+    this.connection.transaction.mail_from = new Rfc2821Address(
+      '<sender@example.com>',
+    )
+    this.connection.transaction.rcpt_to = [
+      new Rfc2821Address('<one@example.com>'),
+    ]
+    const opts = this.plugin.get_options(this.connection)
+    assert.equal(opts.headers.From, 'sender@example.com')
+    assert.deepEqual(opts.headers.Rcpt, ['one@example.com'])
+    assert.equal(opts.headers['Deliver-To'], 'one@example.com')
   })
 
   it('single rcpt gets Rcpt and Deliver-To', () => {

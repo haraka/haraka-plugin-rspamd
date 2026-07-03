@@ -4,6 +4,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+- feat: support rspamd's /checkv3 protocol (opt-in via `path = /checkv3`);
+  message and metadata travel as multipart/form-data body parts, keeping
+  envelope values out of HTTP request headers
 - fix(set_envelope): tolerate both Address APIs; on Haraka <= 3.1.7
   (address-rfc2821, .address is a method) the property read leaked function
   source into From/Rcpt, crashing the scan on Node >= 20 (ERR_INVALID_CHAR)

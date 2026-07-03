@@ -1,9 +1,11 @@
 'use strict'
 
 // node built-ins
+const crypto = require('node:crypto')
 const fs = require('node:fs')
 const http = require('node:http')
 const https = require('node:https')
+const { Writable } = require('node:stream')
 
 // haraka libs
 const DSN = require('haraka-dsn')
@@ -69,6 +71,17 @@ exports.get_options = function (connection) {
   // https://github.com/rspamd/rspamd/blob/master/rules/headers_checks.lua
   const options = { headers: {}, path: this.cfg.main.path, method: 'POST' }
   set_transport(options, this.cfg)
+
+  if (wants_checkv3(this.cfg)) {
+    // rspamd ignores per-message HTTP request headers on /checkv3: the
+    // metadata travels as a JSON part of the multipart body instead (see
+    // get_v3_metadata). Accept selects the flat JSON reply, the same shape
+    // /checkv2 returns.
+    set_upstream_auth(options, this.cfg)
+    options.headers.Accept = 'application/json'
+    return options
+  }
+
   set_protocol(options, this.cfg)
   set_auth(options, connection)
   set_remote(options, connection)
@@ -230,6 +243,89 @@ function set_tls(options, connection) {
   options.headers['TLS-Version'] = connection.tls.cipher.version
 }
 
+function wants_checkv3(cfg) {
+  return cfg.main.path === '/checkv3'
+}
+
+// Per-message metadata for /checkv3. Everything the set_* helpers above put
+// into HTTP request headers for /checkv2 rides in a JSON body part instead,
+// so envelope values never pass through HTTP header validation: a non-ASCII
+// MAIL FROM / RCPT no longer aborts the scan with ERR_INVALID_CHAR on
+// Node >= 20, nor triggers rspamd's BROKEN_HEADERS.
+exports.get_v3_metadata = function (connection) {
+  const md = {}
+  set_v3_remote(md, connection)
+  set_v3_envelope(md, connection)
+  set_v3_tls(md, connection)
+  set_v3_controls(md, this.cfg, connection, this)
+  return md
+}
+
+function set_v3_remote(md, connection) {
+  if (connection.remote.ip) md.ip = connection.remote.ip
+  const fcrdns = connection.results.get('fcrdns')
+  const host = fcrdns?.fcrdns?.[0] ?? connection.remote.host
+  if (host) md.hostname = host
+  if (connection.hello.host) md.helo = connection.hello.host
+  if (connection.notes.auth_user) md.user = connection.notes.auth_user
+}
+
+function set_v3_envelope(md, connection) {
+  const txn = connection.transaction
+  const from = get_address(txn.mail_from)
+  if (from) md.from = from
+
+  const rcpts = txn.rcpt_to
+  if (rcpts?.length) {
+    md.rcpt = rcpts.map(get_address)
+    // for per-user options
+    if (rcpts.length === 1) md.deliver_to = md.rcpt[0]
+  }
+
+  if (txn.uuid) md.queue_id = txn.uuid
+}
+
+function set_v3_tls(md, connection) {
+  if (!connection.tls.enabled) return
+  md.tls = {
+    cipher: connection.tls.cipher.name,
+    version: connection.tls.cipher.version,
+  }
+}
+
+function set_v3_controls(md, cfg, connection, plugin) {
+  const req = cfg.request ?? {}
+  if (req.settings_id) md.settings_id = req.settings_id
+  if (req.settings) set_v3_settings(md, req.settings, connection, plugin)
+  if (req.raw) md.raw = true
+
+  // pass_all is a protocol flag in the metadata, not a Pass header
+  const flags = new Set(get_flags(req))
+  if (req.pass_all) flags.add('pass_all')
+  if (flags.size) md.flags = [...flags]
+
+  // custom request headers surface as task request headers via metadata
+  const headers = cfg.request_headers
+  if (!headers || typeof headers !== 'object') return
+  for (const [key, value] of Object.entries(headers)) {
+    if (!value) continue
+    ;(md.headers ??= {})[key] = `${value}`
+  }
+}
+
+function set_v3_settings(md, settings, connection, plugin) {
+  // the metadata settings key must be a JSON object; rspamd.ini has a string
+  try {
+    const parsed = JSON.parse(settings)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('not an object')
+    }
+    md.settings = parsed
+  } catch (err) {
+    connection.logerror(plugin, `ignoring request.settings: ${err.message}`)
+  }
+}
+
 exports.get_smtp_message = function (r) {
   if (!this.cfg.smtp_message.enabled) return
   const messages = r?.data?.messages
@@ -314,6 +410,19 @@ exports.rspamd_data_post = function (next, connection) {
   )
 
   const options = plugin.get_options(connection)
+
+  if (wants_checkv3(plugin.cfg)) {
+    send_multipart_request(plugin, connection, ctx, options, start)
+    return
+  }
+
+  connection.transaction.message_stream.pipe(
+    start_request(plugin, connection, ctx, options, start),
+  )
+  // pipe calls req.end() asynchronously
+}
+
+function start_request(plugin, connection, ctx, options, start) {
   const request_client = plugin.get_request_client(options)
   ctx.req = request_client.request(options, (res) => {
     let rawData = ''
@@ -324,9 +433,44 @@ exports.rspamd_data_post = function (next, connection) {
   })
 
   ctx.req.on('error', (err) => on_request_error(plugin, connection, ctx, err))
+  return ctx.req
+}
 
-  connection.transaction.message_stream.pipe(ctx.req)
-  // pipe calls req.end() asynchronously
+// /checkv3 request: multipart/form-data with a JSON metadata part and the
+// raw message part. The body is buffered so it can be framed with a
+// Content-Length and the closing boundary appended after the message stream
+// ends.
+function send_multipart_request(plugin, connection, ctx, options, start) {
+  const boundary = `haraka-rspamd-${crypto.randomBytes(16).toString('hex')}`
+  options.headers['Content-Type'] = `multipart/form-data; boundary=${boundary}`
+
+  const metadata = JSON.stringify(plugin.get_v3_metadata(connection))
+  const chunks = [
+    Buffer.from(
+      `--${boundary}\r\n` +
+        'Content-Disposition: form-data; name="metadata"\r\n' +
+        'Content-Type: application/json\r\n\r\n' +
+        `${metadata}\r\n` +
+        `--${boundary}\r\n` +
+        'Content-Disposition: form-data; name="message"\r\n\r\n',
+    ),
+  ]
+
+  const collector = new Writable({
+    write(chunk, encoding, cb) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding))
+      cb()
+    },
+  })
+  collector.on('finish', () => {
+    if (ctx.calledNext) return // timed out while collecting
+    chunks.push(Buffer.from(`\r\n--${boundary}--\r\n`))
+    const body = Buffer.concat(chunks)
+    options.headers['Content-Length'] = body.length
+    start_request(plugin, connection, ctx, options, start).end(body)
+  })
+  collector.on('error', (err) => on_request_error(plugin, connection, ctx, err))
+  connection.transaction.message_stream.pipe(collector)
 }
 
 function make_request_context(plugin, connection, next) {

@@ -951,3 +951,201 @@ describe('rspamd_data_post success paths', () => {
     })
   })
 })
+
+describe('checkv3 options and metadata', () => {
+  beforeEach(_set_up)
+
+  it('omits per-message headers from request options', () => {
+    this.plugin.cfg.main.path = '/checkv3'
+    this.connection.remote.ip = '203.0.113.5'
+    this.connection.hello.host = 'helo.example.com'
+    this.connection.notes.auth_user = 'bob@example.com'
+    this.connection.transaction.mail_from = new Address('<sender@example.com>')
+    this.plugin.cfg.request.settings_id = 'uribl'
+
+    const opts = this.plugin.get_options(this.connection)
+    assert.equal(opts.path, '/checkv3')
+    assert.equal(opts.headers.Accept, 'application/json')
+    const banned = ['From', 'Rcpt', 'IP', 'Hostname', 'Helo', 'User']
+    for (const name of [...banned, 'Settings-ID', 'Queue-Id']) {
+      assert.equal(opts.headers[name], undefined, `${name} must not be sent`)
+    }
+  })
+
+  it('keeps upstream auth headers', () => {
+    this.plugin.cfg.main.path = '/checkv3'
+    this.plugin.cfg.auth = { basic_user: 'u', basic_pass: 'p' }
+    const opts = this.plugin.get_options(this.connection)
+    assert.equal(opts.headers.Authorization, 'Basic dTpw')
+  })
+
+  it('maps the v2 request headers into metadata', () => {
+    this.connection.remote.ip = '203.0.113.5'
+    this.connection.remote.host = 'fallback.example.com'
+    this.connection.hello.host = 'helo.example.com'
+    this.connection.notes.auth_user = 'bob@example.com'
+    this.connection.tls.enabled = true
+    this.connection.tls.cipher = {
+      name: 'TLS_AES_256_GCM_SHA384',
+      version: 'TLSv1.3',
+    }
+    const txn = this.connection.transaction
+    txn.mail_from = new Address('<sender@example.com>')
+    txn.rcpt_to = [new Address('<one@example.com>')]
+    txn.uuid = 'ABC-123'
+    this.plugin.cfg.request.settings_id = 'uribl'
+    this.plugin.cfg.request.settings = '{"groups_enabled":["surbl"]}'
+    this.plugin.cfg.request.flags = 'groups,milter'
+    this.plugin.cfg.request.pass_all = true
+    this.plugin.cfg.request.raw = true
+    this.plugin.cfg.request_headers = { 'MTA-Tag': 'outbound' }
+
+    assert.deepEqual(this.plugin.get_v3_metadata(this.connection), {
+      ip: '203.0.113.5',
+      hostname: 'fallback.example.com',
+      helo: 'helo.example.com',
+      user: 'bob@example.com',
+      from: 'sender@example.com',
+      rcpt: ['one@example.com'],
+      deliver_to: 'one@example.com',
+      queue_id: 'ABC-123',
+      tls: { cipher: 'TLS_AES_256_GCM_SHA384', version: 'TLSv1.3' },
+      settings_id: 'uribl',
+      settings: { groups_enabled: ['surbl'] },
+      raw: true,
+      flags: ['groups', 'milter', 'pass_all'],
+      headers: { 'MTA-Tag': 'outbound' },
+    })
+  })
+
+  it('extracts the envelope from legacy address-rfc2821 objects', () => {
+    this.connection.transaction.mail_from = new Rfc2821Address(
+      '<sender@example.com>',
+    )
+    this.connection.transaction.rcpt_to = [
+      new Rfc2821Address('<one@example.com>'),
+    ]
+    const md = this.plugin.get_v3_metadata(this.connection)
+    assert.equal(md.from, 'sender@example.com')
+    assert.deepEqual(md.rcpt, ['one@example.com'])
+    assert.equal(md.deliver_to, 'one@example.com')
+  })
+
+  it('drops request.settings that is not a JSON object', () => {
+    this.plugin.cfg.request.settings = 'symbols_enabled = ["FOO"]'
+    const md = this.plugin.get_v3_metadata(this.connection)
+    assert.equal(md.settings, undefined)
+  })
+})
+
+describe('rspamd_data_post checkv3', () => {
+  let server
+
+  beforeEach((t, done) => {
+    this.plugin = makePlugin('rspamd')
+    this.connection = makeConnection({
+      mailFrom: 'm@example.com',
+      rcptTo: ['r@example.com'],
+    })
+    const txn = this.connection.transaction
+    txn.uuid = 'TEST-UUID'
+    txn.message_stream.add_line('Header: 1\r\n')
+    txn.message_stream.add_line('\r\n')
+    txn.message_stream.add_line('Body\r\n')
+    txn.message_stream.add_line_end(done)
+  })
+
+  afterEach((t, done) => {
+    if (server) server.close(done)
+    else done()
+  })
+
+  const startV3Stub = (reply, onRequest, cb) => {
+    server = http.createServer((req, res) => {
+      const chunks = []
+      req.on('data', (c) => chunks.push(c))
+      req.on('end', () => {
+        onRequest(req, Buffer.concat(chunks))
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify(reply))
+      })
+    })
+    server.listen(0, '127.0.0.1', () => {
+      this.plugin.cfg.main.host = '127.0.0.1'
+      this.plugin.cfg.main.port = server.address().port
+      this.plugin.cfg.main.path = '/checkv3'
+      cb()
+    })
+  }
+
+  const get_parts = (req, body) => {
+    const boundary = req.headers['content-type'].match(/boundary=(.+)$/)[1]
+    const parts = {}
+    for (const seg of body
+      .toString('utf8')
+      .split(`--${boundary}`)
+      .slice(1, -1)) {
+      const body_at = seg.indexOf('\r\n\r\n')
+      const head = seg.slice(0, body_at)
+      const data = seg.slice(body_at + 4)
+      parts[head.match(/name="([^"]+)"/)[1]] = data.slice(0, -2) // framing CRLF
+    }
+    return parts
+  }
+
+  it('posts multipart metadata + message and honors the verdict', (t, done) => {
+    let seen
+    startV3Stub(
+      { action: 'reject', score: 99, required_score: 10 },
+      (req, body) => {
+        seen = { req, body }
+      },
+      () => {
+        this.plugin.rspamd_data_post((code) => {
+          assert.equal(code, DENY)
+          assert.equal(seen.req.url, '/checkv3')
+          assert.equal(seen.req.headers.accept, 'application/json')
+          assert.ok(
+            seen.req.headers['content-type'].startsWith(
+              'multipart/form-data; boundary=',
+            ),
+          )
+          assert.equal(
+            Number(seen.req.headers['content-length']),
+            seen.body.length,
+          )
+          assert.equal(seen.req.headers.from, undefined)
+          assert.equal(seen.req.headers.rcpt, undefined)
+
+          const parts = get_parts(seen.req, seen.body)
+          const md = JSON.parse(parts.metadata)
+          assert.equal(md.from, 'm@example.com')
+          assert.deepEqual(md.rcpt, ['r@example.com'])
+          assert.equal(md.queue_id, 'TEST-UUID')
+          assert.equal(parts.message, 'Header: 1\r\n\r\nBody\r\n')
+          done()
+        }, this.connection)
+      },
+    )
+  })
+
+  it('carries a non-ASCII envelope that would crash header transport', (t, done) => {
+    // on /checkv2 this envelope throws ERR_INVALID_CHAR in the From header
+    this.connection.transaction.mail_from = new Address('<пример@example.com>')
+    let seen
+    startV3Stub(
+      { action: 'no action', score: 0, required_score: 10 },
+      (req, body) => {
+        seen = { req, body }
+      },
+      () => {
+        this.plugin.rspamd_data_post((code) => {
+          assert.equal(code, undefined)
+          const md = JSON.parse(get_parts(seen.req, seen.body).metadata)
+          assert.equal(md.from, 'пример@example.com')
+          done()
+        }, this.connection)
+      },
+    )
+  })
+})

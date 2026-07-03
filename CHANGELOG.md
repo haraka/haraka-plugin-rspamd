@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
+- feat: support rspamd's /checkv3 protocol (opt-in via `path = /checkv3`);
+  message and metadata travel as multipart/form-data body parts, keeping
+  envelope values out of HTTP request headers
+
 ### [1.6.1] - 2026-06-20
 
 - deps(test-fixtures): update to 1.7.0 syntax (#56, #57)

@@ -35,7 +35,9 @@ rspamd.ini
 
   Default: /checkv2
 
-  HTTP path for rspamd checks.
+  HTTP path for rspamd checks. Set to `/checkv3` to carry the per-message
+  metadata in the request body instead of HTTP headers — see
+  [the checkv3 protocol](#the-checkv3-protocol) below.
 
 - add_headers
 
@@ -261,6 +263,30 @@ rspamd.ini
   Default: 29 seconds
 
   How long to wait for a response from rspamd.
+
+## The checkv3 protocol
+
+With the default `path = /checkv2`, per-message metadata (envelope from,
+recipients, client IP, HELO, hostname, authenticated user, queue id, TLS
+info, settings, flags) is sent to rspamd as HTTP request headers. Header
+transport is fragile: Node's strict header validation rejects values with
+non-ASCII characters (spam routinely carries non-ASCII MAIL FROM / RCPT),
+aborting the scan, and it enlarges the header-injection surface.
+
+Setting `path = /checkv3` switches to rspamd's v3 protocol (rspamd >= 4.1):
+the message and a JSON metadata object are posted as two `multipart/form-data`
+body parts. The reply is flat JSON, identical to /checkv2.
+
+Notes:
+
+- `request.settings` must be a JSON object (it is passed structured). A value
+  rspamd would accept as UCL but is invalid JSON is logged as an error.
+- `request.url_format` has no v3 equivalent; use `request.ext_urls` instead.
+- the SPF result hint is not forwarded (rspamd evaluates SPF itself).
+- entries in `request_headers` are carried in the metadata `headers` key and
+  still surface as request headers on the rspamd side.
+- Memory use will increase with v3 as the entire email is spooled in memory
+  before being sent to rspamd.
 
 <!-- leave these buried at the bottom of the document -->
 

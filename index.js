@@ -439,7 +439,8 @@ function send_multipart_request(plugin, connection, ctx, options, start) {
         'Content-Type: application/json\r\n\r\n' +
         `${metadata}\r\n` +
         `--${boundary}\r\n` +
-        'Content-Disposition: form-data; name="message"\r\n\r\n',
+        'Content-Disposition: form-data; name="message"\r\n' +
+        'Content-Type: message/rfc822\r\n\r\n',
     ),
   ]
 

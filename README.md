@@ -275,19 +275,18 @@ aborting the scan, and it enlarges the header-injection surface.
 
 Setting `path = /checkv3` switches to rspamd's v3 protocol (rspamd >= 4.1):
 the message and a JSON metadata object are posted as two `multipart/form-data`
-body parts, so no per-message value passes through HTTP header parsing. The
-reply is requested as flat JSON and is identical to /checkv2, as are all
-plugin actions and added headers.
+body parts. The reply is flat JSON, identical to /checkv2.
 
 Notes:
 
-- `request.settings` must be a JSON object (it is passed structured, not as
-  a raw header). A value rspamd would accept as UCL but that is not valid
-  JSON is ignored with a logged error.
+- `request.settings` must be a JSON object (it is passed structured). A value
+  rspamd would accept as UCL but is invalid JSON is logged as an error.
 - `request.url_format` has no v3 equivalent; use `request.ext_urls` instead.
 - the SPF result hint is not forwarded (rspamd evaluates SPF itself).
 - entries in `request_headers` are carried in the metadata `headers` key and
   still surface as request headers on the rspamd side.
+- Memory use will increase with v3 as the entire email is spooled in memory
+  before being sent to rspamd.
 
 <!-- leave these buried at the bottom of the document -->
 

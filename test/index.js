@@ -1050,7 +1050,7 @@ describe('rspamd_data_post checkv3', () => {
   }
 
   const get_parts = (req, body) => {
-    const boundary = req.headers['content-type'].match(/boundary=(.+)$/)[1]
+    const boundary = req.headers['content-type'].match(/boundary=([^\s;]+)/)[1]
     const parts = {}
     for (const seg of body
       .toString('utf8')

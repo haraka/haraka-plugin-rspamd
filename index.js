@@ -532,7 +532,7 @@ exports.decide_action = function (connection, r) {
   if (this.cfg.soft_reject.enabled && r.data.action === 'soft reject') {
     return [
       DENYSOFT,
-      DSN.sec_unauthorized(smtp_message || this.cfg.soft_reject.message, 451),
+      DSN.sec_unauthorized(smtp_message || this.cfg.soft_reject.message, 451).toString(),
     ]
   }
   if (this.wants_reject(connection, r.data)) {

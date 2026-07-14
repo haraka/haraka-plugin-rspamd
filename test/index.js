@@ -871,10 +871,11 @@ describe('rspamd_data_post success paths', () => {
     })
   }
 
-  it('action=soft reject → DENYSOFT', (t, done) => {
+  it('action=soft reject → DENYSOFT with string message', (t, done) => {
     startStub({ action: 'soft reject', score: 5, required_score: 10 }, () => {
-      this.plugin.rspamd_data_post((code) => {
+      this.plugin.rspamd_data_post((code, msg) => {
         assert.equal(code, DENYSOFT)
+        assert.equal(typeof msg, 'string', `message must be a string, got ${typeof msg}: ${msg}`)
         done()
       }, this.connection)
     })

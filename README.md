@@ -269,9 +269,9 @@ rspamd.ini
 With the default `path = /checkv2`, per-message metadata (envelope from,
 recipients, client IP, HELO, hostname, authenticated user, queue id, TLS
 info, settings, flags) is sent to rspamd as HTTP request headers. Header
-transport is fragile: Node's strict header validation rejects values with
-non-ASCII characters (spam routinely carries non-ASCII MAIL FROM / RCPT),
-aborting the scan, and it enlarges the header-injection surface.
+transport is fragile: a value Node's header validation rejects (control
+characters) aborts the scan, and it enlarges the header-injection surface.
+Non-ASCII values are sent as their UTF-8 bytes.
 
 Setting `path = /checkv3` switches to rspamd's v3 protocol (rspamd >= 4.1):
 the message and a JSON metadata object are posted as two `multipart/form-data`

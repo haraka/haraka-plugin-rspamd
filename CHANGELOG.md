@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - feat: support rspamd's /checkv3 protocol (opt-in via `path = /checkv3`);
   message and metadata travel as multipart/form-data body parts, keeping
   envelope values out of HTTP request headers
+- fix(checkv2): send header values as UTF-8 bytes
+- fix: route http.request() exceptions to the request error path
 
 ### [1.6.1] - 2026-06-20
 

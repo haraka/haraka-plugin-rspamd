@@ -90,7 +90,19 @@ exports.get_options = function (connection) {
   set_tls(options, connection)
   set_upstream_auth(options, this.cfg)
   set_custom_headers(options, this.cfg)
+  for (const [name, value] of Object.entries(options.headers)) {
+    options.headers[name] = to_utf8_bytes(value)
+  }
   return options
+}
+
+// rspamd reads header values as UTF-8. Node refuses header strings with chars
+// above U+00FF and writes the rest one byte per char (as the message body is
+// piped in Buffers), so pass each UTF-8 byte as one char.
+function to_utf8_bytes(value) {
+  if (Array.isArray(value)) return value.map(to_utf8_bytes)
+  if (typeof value !== 'string') return value
+  return Buffer.from(value, 'utf8').toString('latin1')
 }
 
 function set_transport(options, cfg) {
@@ -236,9 +248,7 @@ function wants_checkv3(cfg) {
 
 // Per-message metadata for /checkv3. Everything the set_* helpers above put
 // into HTTP request headers for /checkv2 rides in a JSON body part instead,
-// so envelope values never pass through HTTP header validation: a non-ASCII
-// MAIL FROM / RCPT no longer aborts the scan with ERR_INVALID_CHAR on
-// Node >= 20, nor triggers rspamd's BROKEN_HEADERS.
+// so envelope values never pass through HTTP header validation.
 exports.get_v3_metadata = function (connection) {
   const md = {}
   set_v3_remote(md, connection)
@@ -403,9 +413,14 @@ exports.rspamd_data_post = function (next, connection) {
     return
   }
 
-  connection.transaction.message_stream.pipe(
-    start_request(plugin, connection, ctx, options, start),
-  )
+  let req
+  try {
+    req = start_request(plugin, connection, ctx, options, start)
+  } catch (err) {
+    // http.request() validates header values synchronously (ERR_INVALID_CHAR)
+    return on_request_error(plugin, connection, ctx, err)
+  }
+  connection.transaction.message_stream.pipe(req)
   // pipe calls req.end() asynchronously
 }
 

@@ -4,10 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Unreleased
 
-- feat: support rspamd's /checkv3 protocol (opt-in via `path = /checkv3`);
-  message and metadata travel as multipart/form-data body parts, keeping
-  envelope values out of HTTP request headers
-- fix(checkv2): send header values as UTF-8 bytes
+### [1.6.2] - 2026-11-11
+
+- fix(checkv2): send the SPF header as JSON rspamd can parse
+- fix(checkv2): send header values as UTF-8 bytes (#63)
+- support rspamd's /checkv3 protocol (#61)
 - fix: route http.request() exceptions to the request error path
 
 ### [1.6.1] - 2026-06-20
@@ -145,3 +146,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 [1.5.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.5.0
 [1.6.0]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.0
 [1.6.1]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.1
+[1.6.2]: https://github.com/haraka/haraka-plugin-rspamd/releases/tag/v1.6.2

@@ -1,6 +1,6 @@
 {
   "name": "haraka-plugin-rspamd",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Haraka plugin for rspamd",
   "main": "index.js",
   "scripts": {

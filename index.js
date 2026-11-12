@@ -214,10 +214,31 @@ function set_remote(options, connection) {
   if (connection.hello.host) options.headers.Helo = connection.hello.host
 }
 
+// rspamd's http_headers plugin parses the SPF header as UCL and, when it
+// parses, skips its own SPF check. TempError has no rspamd equivalent, so
+// it is left out and rspamd checks SPF itself.
+const rspamd_spf_result = {
+  pass: 'pass',
+  fail: 'fail',
+  softfail: 'softfail',
+  neutral: 'neutral',
+  none: 'na',
+  permerror: 'permfail',
+}
+
 function set_spf(options, connection) {
-  const spf =
-    connection.transaction.results.get('spf') ?? connection.results.get('spf')
-  if (spf?.result) options.headers.SPF = { result: spf.result.toLowerCase() }
+  const result = rspamd_spf_result[get_spf_result(connection)?.toLowerCase()]
+  if (result) options.headers.SPF = JSON.stringify({ result })
+}
+
+// The connection-scope result is the HELO check. rspamd uses HELO for SPF only
+// when the sender is null; otherwise a HELO pass stands in for an unchecked
+// MAIL FROM and counts toward DMARC alignment.
+function get_spf_result(connection) {
+  const txn = connection.transaction
+  const mfrom = txn.results.get('spf')
+  if (mfrom) return mfrom.result
+  if (txn.mail_from?.isNull()) return connection.results.get('spf')?.result
 }
 
 function set_envelope(options, connection) {

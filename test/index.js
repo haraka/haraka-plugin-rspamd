@@ -387,16 +387,58 @@ describe('get_options', () => {
   })
 
   it('SPF from transaction results wins over connection results', () => {
-    this.connection.results.add({ name: 'spf' }, { result: 'NEUTRAL' })
-    this.connection.transaction.results.add({ name: 'spf' }, { result: 'PASS' })
+    this.connection.results.add({ name: 'spf' }, { result: 'Neutral' })
+    this.connection.transaction.results.add({ name: 'spf' }, { result: 'Pass' })
     const opts = this.plugin.get_options(this.connection)
-    assert.deepEqual(opts.headers.SPF, { result: 'pass' })
+    assert.equal(opts.headers.SPF, '{"result":"pass"}')
   })
 
-  it('falls back to connection SPF when transaction has none', () => {
-    this.connection.results.add({ name: 'spf' }, { result: 'FAIL' })
+  it('uses the HELO SPF result for a null sender', () => {
+    this.connection.transaction.mail_from = new Address('<>')
+    this.connection.results.add({ name: 'spf' }, { result: 'Fail' })
     const opts = this.plugin.get_options(this.connection)
-    assert.deepEqual(opts.headers.SPF, { result: 'fail' })
+    assert.equal(opts.headers.SPF, '{"result":"fail"}')
+  })
+
+  it('ignores the HELO SPF result when MAIL FROM went unchecked', () => {
+    this.connection.transaction.mail_from = new Address('<a@example.com>')
+    this.connection.results.add({ name: 'spf' }, { result: 'Pass' })
+    const opts = this.plugin.get_options(this.connection)
+    assert.equal(opts.headers.SPF, undefined)
+  })
+
+  it('omits SPF when the transaction result is only a skip', () => {
+    this.connection.results.add({ name: 'spf' }, { result: 'Pass' })
+    this.connection.transaction.results.add(
+      { name: 'spf' },
+      { skip: 'host(relaying)' },
+    )
+    const opts = this.plugin.get_options(this.connection)
+    assert.equal(opts.headers.SPF, undefined)
+  })
+
+  for (const [haraka, rspamd] of [
+    ['SoftFail', 'softfail'],
+    ['None', 'na'],
+    ['PermError', 'permfail'],
+  ]) {
+    it(`maps SPF ${haraka} to rspamd's ${rspamd}`, () => {
+      this.connection.transaction.results.add(
+        { name: 'spf' },
+        { result: haraka },
+      )
+      const opts = this.plugin.get_options(this.connection)
+      assert.equal(opts.headers.SPF, `{"result":"${rspamd}"}`)
+    })
+  }
+
+  it('omits SPF on TempError so rspamd checks it', () => {
+    this.connection.transaction.results.add(
+      { name: 'spf' },
+      { result: 'TempError' },
+    )
+    const opts = this.plugin.get_options(this.connection)
+    assert.equal(opts.headers.SPF, undefined)
   })
 
   it('sets From from mail_from', () => {

@@ -936,6 +936,105 @@ describe('rspamd_data_post success paths', () => {
   })
 })
 
+describe('rspamd_data_post checkv2 header values', () => {
+  let server
+
+  beforeEach((t, done) => {
+    this.plugin = makePlugin('rspamd')
+    this.connection = makeConnection({
+      mailFrom: 'm@example.com',
+      rcptTo: ['r@example.com'],
+    })
+    const txn = this.connection.transaction
+    txn.uuid = 'TEST-UUID'
+    txn.message_stream.add_line('Header: 1\r\n')
+    txn.message_stream.add_line('\r\n')
+    txn.message_stream.add_line('Body\r\n')
+    txn.message_stream.add_line_end(done)
+  })
+
+  afterEach((t, done) => {
+    if (!server) return done()
+    server.close(done)
+    server = undefined
+  })
+
+  const startStub = (onRequest, cb) => {
+    server = http.createServer((req, res) => {
+      onRequest(req)
+      req.resume()
+      req.on('end', () => {
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ action: 'no action', score: 0 }))
+      })
+    })
+    server.listen(0, '127.0.0.1', () => {
+      this.plugin.cfg.main.host = '127.0.0.1'
+      this.plugin.cfg.main.port = server.address().port
+      cb()
+    })
+  }
+
+  // node's HTTP parser maps each header byte to one latin1 char
+  const utf8_values = (req, name) =>
+    req.headersDistinct[name].map((v) =>
+      Buffer.from(v, 'latin1').toString('utf8'),
+    )
+
+  it('sends a non-Latin-1 envelope as UTF-8 bytes', (t, done) => {
+    const txn = this.connection.transaction
+    txn.mail_from = new Address('<пример@example.com>')
+    txn.rcpt_to = [new Address('<łukasz@example.pl>')]
+    let seen
+    startStub(
+      (req) => {
+        seen = req
+      },
+      () => {
+        this.plugin.rspamd_data_post((code) => {
+          assert.equal(code, undefined)
+          assert.deepEqual(utf8_values(seen, 'from'), ['пример@example.com'])
+          assert.deepEqual(utf8_values(seen, 'rcpt'), ['łukasz@example.pl'])
+          assert.deepEqual(utf8_values(seen, 'deliver-to'), [
+            'łukasz@example.pl',
+          ])
+          done()
+        }, this.connection)
+      },
+    )
+  })
+
+  it('sends a Latin-1 recipient as UTF-8, not as latin1 bytes', (t, done) => {
+    this.connection.transaction.rcpt_to = [new Address('<josé@example.fr>')]
+    let seen
+    startStub(
+      (req) => {
+        seen = req
+      },
+      () => {
+        this.plugin.rspamd_data_post((code) => {
+          assert.equal(code, undefined)
+          assert.deepEqual(utf8_values(seen, 'rcpt'), ['josé@example.fr'])
+          done()
+        }, this.connection)
+      },
+    )
+  })
+
+  it('a header value node refuses takes the request error path', (t, done) => {
+    this.connection.hello.host = 'bad\u0001helo'
+    this.plugin.cfg.defer.error = true
+    this.plugin.rspamd_data_post((code) => {
+      assert.equal(code, DENYSOFT)
+      assert.match(
+        String(this.connection.transaction.results.get('rspamd').err),
+        /Invalid character in header content \["Helo"\]/,
+      )
+      done()
+    }, this.connection)
+  })
+})
+
 describe('checkv3 options and metadata', () => {
   beforeEach(_set_up)
 
@@ -1100,8 +1199,7 @@ describe('rspamd_data_post checkv3', () => {
     )
   })
 
-  it('carries a non-ASCII envelope that would crash header transport', (t, done) => {
-    // on /checkv2 this envelope throws ERR_INVALID_CHAR in the From header
+  it('carries a non-ASCII envelope in the metadata part', (t, done) => {
     this.connection.transaction.mail_from = new Address('<пример@example.com>')
     let seen
     startV3Stub(

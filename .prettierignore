@@ -3,3 +3,5 @@
 node_modules
 .release/
 CONTRIBUTORS.md
+.github/copilot-instructions.md
+AGENTS.md
